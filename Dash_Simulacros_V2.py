@@ -60,37 +60,63 @@ def calcular_desviacion_estandar(grupo):
   desviacion_estandar_grupo = datos[datos['Grupo'] == grupo]['Puntaje global'].std()
   return desviacion_estandar_grupo
 
-# Configurar el título y el estilo de la página
+#################################################################################################
+################################## RESUMEN GENERAL ##############################################
+#################################################################################################
 
 st.title("Resumen general - Simulacro ICFES")
 
-# Establecer estilo de página con fondo claro
-#st.config(layout="wide", backgroundColor="#f0f0f0")
+## Definir la columna por la que se desea agrupar
+#columna_grupo = "SIMULACRO"  # Ejemplo: "Género", "Grado", etc.
+#
+## Obtener grupos únicos de la columna elegida
+#simulacro_unicos = datos[columna_grupo].unique()
+#
+## Crear un selector de grupo con st.selectbox
+#simulacro_seleccionado = st.selectbox("Seleccione el numero de simulacro:", simulacro_unicos)
+#
+#datos = datos[datos["SIMULACRO"] == simulacro_seleccionado]
+## Mostrar tarjetas con métricas generales
 
-# Mostrar tarjetas con métricas generales
+##################################### DATOS SIMULACROS ####################################
+datos_s1 = datos[datos["SIMULACRO"] == "S1"]
+datos_s2 = datos[datos["SIMULACRO"] == "S2"]
+###########################################################################################
 
-# Calcular promedios, medianas y desviaciones estándar generales
-promedio_general = round(datos['Puntaje global'].mean(),2)
-mediana_general = round(datos['Puntaje global'].median(),2)
-desviacion_estandar_general = round(datos['Puntaje global'].std(),2)
+# Establecer subtitulos
+#st.subheader("Primer simulacro")
+
+# Calcular metricas simulacro 1
+promedio_general_s1 = round(datos_s1['Puntaje global'].mean(),2)
+maximo_s1 = max(datos_s1['Puntaje global'])
+minimo_s1 = min(datos_s1['Puntaje global'])
+
+# Calcular metricas simulacro 2
+promedio_general_s2 = round(datos_s2['Puntaje global'].mean(),2)
+maximo_s2 = max(datos_s2['Puntaje global'])
+minimo_s2 = min(datos_s2['Puntaje global'])
 
 # Mostrar tarjetas con las métricas
 col1, col2, col3 = st.columns(3)
 with col1:
-  st.metric(label="Promedio general", value=promedio_general, delta=0)
+  st.metric(label="Promedio puntaje global simulacro 1", value=promedio_general_s1, delta=0)
+  st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2, delta=0)
 with col2:
-  st.metric(label="Mediana general", value=mediana_general)
+  st.metric(label="Máximo puntaje global simulacro 1", value=maximo_s1)
+  st.metric(label="Máximo puntaje global simulacro 2", value=maximo_s2)
 with col3:
-  st.metric(label="Desviación estándar general", value=desviacion_estandar_general)
+  st.metric(label="Mínimo puntaje global simulacro 1", value=minimo_s1)
+  st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
 style_metric_cards(border_color="#3A74E7")
+
 # Mostrar gráfico de barras de distribución de puntajes por grupo
 
 # Agrupar datos por grupo y calcular promedios de puntajes globales
-datos_agrupados = datos.groupby('Grupo')['Puntaje global'].mean().reset_index()
+datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])['Puntaje global'].mean().reset_index()
 
 # Crear gráfico de barras
 
-fig = px.bar(datos_agrupados, x="Grupo", y="Puntaje global", text_auto=True)
+fig = px.bar(datos_agrupados, x="Grupo", y="Puntaje global", color = 'SIMULACRO', barmode='group', text_auto=True)
 
 # Actualizar el diseño para etiquetas y título
 fig.update_layout(
@@ -106,7 +132,7 @@ st.plotly_chart(fig)
 ## Definir funciones para procesar datos por área
 ################################################################
 
-def obtener_datos_por_area(area):
+def obtener_datos_por_area_simulacro(area,simulacro):
   """
   Obtiene los datos de un área específica.
 
@@ -116,10 +142,11 @@ def obtener_datos_por_area(area):
   Retorno:
     DataFrame: Subconjunto de datos con la información del área seleccionada.
   """
-  datos_area = datos[["Grupo","Nombre alumno",f"{area}"]]
-  return datos_area
+  datos_area_simulacro = datos[["Grupo","Nombre alumno", "SIMULACRO",f"{area}"]]
+  datos_area_simulacro = datos_area_simulacro[datos_area_simulacro["SIMULACRO"] == simulacro]
+  return datos_area_simulacro
 
-def calcular_metricas_por_area(datos_area,area):
+def calcular_metricas_por_area(datos_area_simulacro,area):
   """
   Calcula las métricas para un área específica.
 
@@ -129,12 +156,12 @@ def calcular_metricas_por_area(datos_area,area):
   Retorno:
     Diccionario: Diccionario con las métricas calculadas (promedio, mediana, desviación estándar, percentiles).
   """
-  promedio_area = datos_area[f"{area}"].mean()
-  mediana_area = datos_area[f"{area}"].median()
-  desviacion_estandar_area = datos_area[f"{area}"].std()
-  percentiles_area = datos_area[f"{area}"].quantile([0.25, 0.5, 0.75])
-  maximo_area = max(datos_area[f"{area}"])
-  minimo_area = min(datos_area[f"{area}"])
+  promedio_area = datos_area_simulacro[f"{area}"].mean()
+  mediana_area = datos_area_simulacro[f"{area}"].median()
+  desviacion_estandar_area = datos_area_simulacro[f"{area}"].std()
+  percentiles_area = datos_area_simulacro[f"{area}"].quantile([0.25, 0.5, 0.75])
+  maximo_area = max(datos_area_simulacro[f"{area}"])
+  minimo_area = min(datos_area_simulacro[f"{area}"])
 
   metricas_area = {
     "Promedio": promedio_area,
@@ -147,329 +174,71 @@ def calcular_metricas_por_area(datos_area,area):
 
   return metricas_area
 
-def generar_tabla_metricas(metricas_area):
-  """
-  Genera una tabla HTML con las métricas de un área.
-
-  Argumentos:
-    metricas_area (Diccionario): Diccionario con las métricas calculadas.
-
-  Retorno:
-    str: Cadena HTML con la tabla de métricas.
-  """
-  tabla_html = """
-  <table style="border: 1px solid #ddd; border-spacing: 0; width: auto;">
-    <tr>
-      <th style="padding: 8px; border: 1px solid #ddd;">Métrica</th>
-      <th style="padding: 8px; border: 1px solid #ddd;">Valor</th>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Promedio</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{promedio:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Mediana</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{mediana:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Desviación estándar</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{desviacion_estandar:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Percentiles</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">
-        <ul style="list-style: none; margin: 0; padding: 0;">
-          <li>25%: {percentil_25:.2f}</li>
-          <li>50%: {percentil_50:.2f}</li>
-          <li>75%: {percentil_75:.2f}</li>
-        </ul>
-      </td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Máximo</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{maximo_area:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Mínimo</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{mínimo_area:.2f}</td>
-    </tr>
-  </table>
-  """.format(
-    promedio=metricas_area["Promedio"],
-    mediana=metricas_area["Mediana"],
-    desviacion_estandar=metricas_area["Desviación estándar"],
-    percentil_25=metricas_area["Percentiles"][0.25],
-    percentil_50=metricas_area["Percentiles"][0.5],
-    percentil_75=metricas_area["Percentiles"][0.75],
-    maximo_area=metricas_area["maximo_area"],
-    mínimo_area=metricas_area["minimo_area"]
-  )
-  return tabla_html
-
 # Establecer título de la sección
 st.title("Análisis por área - Simulacro ICFES")
 
 # Definir lista de áreas para las pestañas
 areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
+#tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
 
-with tab1:
-   st.header("Matemáticas")
-   # Obtener datos del área actual
-   datos_area = obtener_datos_por_area("Matemáticas")
+# Crear un selector de grupo con st.selectbox
+area_seleccionado = st.selectbox("Seleccione el numero de simulacro:", areas)
 
-   # Calcular métricas para el área actual
-   metricas_area = calcular_metricas_por_area(datos_area,"Matemáticas")
-   
-   # Generar tabla HTML con las métricas
-   tabla_metricas_html = generar_tabla_metricas(metricas_area)
+#datos = datos[datos["SIMULACRO"] == simulacro_seleccionado]
 
-   # Mostrar tarjetas con las métricas
-   col1, col2, col3 = st.columns(3)
-   with col1:
-    promedio = metricas_area['Promedio'].round(2)
-    st.metric(label="Promedio general", value=promedio, delta=0)
-   with col2:
-    maximo = metricas_area['maximo_area']
-    st.metric(label="Máximo", value=maximo)
-   with col3:
-    minimo = metricas_area['minimo_area']
-    st.metric(label="Mínimo", value=minimo)
-   style_metric_cards(border_color="#3A74E7")
+st.header(area_seleccionado)
+# Obtener datos del área actual
+datos_area_s1 = obtener_datos_por_area_simulacro(area_seleccionado,"S1")
+datos_area_s2 = obtener_datos_por_area_simulacro(area_seleccionado,"S2")
 
-   # Mostrar la tabla HTML en la pestaña
-   #st.markdown(tabla_metricas_html, unsafe_allow_html=True)
-  
-  ############ GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
+# Calcular métricas para el área actual
+metricas_area_s1 = calcular_metricas_por_area(datos_area_s1,area_seleccionado)
+metricas_area_s2 = calcular_metricas_por_area(datos_area_s2,area_seleccionado)
+# Generar tabla HTML con las métricas
+#tabla_metricas_html = generar_tabla_metricas(metricas_area)
 
-   # Agrupar datos por grupo y calcular promedios de puntajes Matemáticas
-   datos_agrupados = datos.groupby('Grupo')['Matemáticas'].mean().reset_index()
+# Mostrar tarjetas con las métricas
+col1, col2, col3 = st.columns(3)
+with col1:
+ st.metric(label="Promedio global simulacro 1", value=metricas_area_s1['Promedio'].round(2))
+ st.metric(label="Promedio global simulacro 2", value=metricas_area_s2['Promedio'].round(2))
+with col2:
+ st.metric(label="Máximo simulacro 1", value=metricas_area_s1['maximo_area'])
+ st.metric(label="Máximo simulacro 2", value=metricas_area_s2['maximo_area'])
+with col3:
+ st.metric(label="Mínimo simulacro 1", value= metricas_area_s1['minimo_area'])
+ st.metric(label="Mínimo simulacro 2", value= metricas_area_s2['minimo_area'])
+style_metric_cards(border_color="#3A74E7")
 
-   # Crear gráfico de barras
+# Mostrar la tabla HTML en la pestaña
+#st.markdown(tabla_metricas_html, unsafe_allow_html=True)
+########### GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
 
-   fig = px.bar(datos_agrupados, x="Grupo", y="Matemáticas", text_auto=True)
+# Agrupar datos por grupo y calcular promedios de puntajes Matemáticas
+datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[area_seleccionado].mean().reset_index()
 
-   # Actualizar el diseño para etiquetas y título
-   fig.update_layout(
-       xaxis_title="Grupo",
-       yaxis_title="Matemáticas",
-       title="Distribución de puntaje Matemáticas por grupo",
-   )
+# Crear gráfico de barras
 
-   # Mostrar el gráfico
-   st.plotly_chart(fig)
-  ##########################################################################
-   # Mostrar histogramas y boxplots (opcional)
-   st.plotly_chart(px.histogram(datos_area, x="Matemáticas", text_auto=True))
-   st.plotly_chart(px.box(datos_area, x="Matemáticas"))
-with tab2:
-   st.header("Lectura crítica")
-   # Obtener datos del área actual
-   datos_area = obtener_datos_por_area("Lectura crítica")
+fig = px.bar(datos_agrupados, x="Grupo", y=area_seleccionado, color = 'SIMULACRO', barmode='group', text_auto=True)
 
-   # Calcular métricas para el área actual
-   metricas_area = calcular_metricas_por_area(datos_area,"Lectura crítica")
-   
-   # Generar tabla HTML con las métricas
-   tabla_metricas_html = generar_tabla_metricas(metricas_area)
+# Actualizar el diseño para etiquetas y título
+fig.update_layout(
+    xaxis_title="Grupo",
+    yaxis_title="Matemáticas",
+    title=f"Distribución de puntaje {area_seleccionado} por grupo",
+)
 
-   # Mostrar tarjetas con las métricas
-   col1, col2, col3 = st.columns(3)
-   with col1:
-    promedio = metricas_area['Promedio'].round(2)
-    st.metric(label="Promedio general", value=promedio, delta=0)
-   with col2:
-    maximo = metricas_area['maximo_area']
-    st.metric(label="Máximo", value=maximo)
-   with col3:
-    minimo = metricas_area['minimo_area']
-    st.metric(label="Mínimo", value=minimo)
-   style_metric_cards(border_color="#3A74E7")
+# Mostrar el gráfico
+st.plotly_chart(fig)
+#########################################################################
+# Mostrar histogramas y boxplots (opcional)
+st.plotly_chart(px.histogram(datos_area_s1, x=area_seleccionado, text_auto=True))
+st.plotly_chart(px.box(datos_area_s1, x=area_seleccionado))
 
-   # Mostrar la tabla HTML en la pestaña
-   #st.markdown(tabla_metricas_html, unsafe_allow_html=True)
-   
-   ############ GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
-
-   # Agrupar datos por grupo y calcular promedios de puntajes Lectura crítica
-   datos_agrupados = datos.groupby('Grupo')['Lectura crítica'].mean().reset_index()
-
-   # Crear gráfico de barras
-
-   fig = px.bar(datos_agrupados, x="Grupo", y="Lectura crítica", text_auto=True)
-
-   # Actualizar el diseño para etiquetas y título
-   fig.update_layout(
-       xaxis_title="Grupo",
-       yaxis_title="Lectura crítica",
-       title="Distribución de puntaje Lectura crítica por grupo",
-   )
-
-   # Mostrar el gráfico
-   st.plotly_chart(fig)
-  ##########################################################################
-
-   # Mostrar histogramas y boxplots (opcional)
-   st.plotly_chart(px.histogram(datos_area, x="Lectura crítica", text_auto=True))
-   st.plotly_chart(px.box(datos_area, x="Lectura crítica"))
-
-with tab3:
-   st.header("Ciencias naturales")
-   # Obtener datos del área actual
-   datos_area = obtener_datos_por_area("Ciencias naturales")
-
-   # Calcular métricas para el área actual
-   metricas_area = calcular_metricas_por_area(datos_area,"Ciencias naturales")
-   
-   # Generar tabla HTML con las métricas
-   tabla_metricas_html = generar_tabla_metricas(metricas_area)
-
-   # Mostrar tarjetas con las métricas
-   col1, col2, col3 = st.columns(3)
-   with col1:
-    promedio = metricas_area['Promedio'].round(2)
-    st.metric(label="Promedio general", value=promedio, delta=0)
-   with col2:
-    maximo = metricas_area['maximo_area']
-    st.metric(label="Máximo", value=maximo)
-   with col3:
-    minimo = metricas_area['minimo_area']
-    st.metric(label="Mínimo", value=minimo)
-   style_metric_cards(border_color="#3A74E7")
-
-   # Mostrar la tabla HTML en la pestaña
-   #st.markdown(tabla_metricas_html, unsafe_allow_html=True)
-   
-   ############ GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
-
-   # Agrupar datos por grupo y calcular promedios de puntajes Ciencias naturales
-   datos_agrupados = datos.groupby('Grupo')['Ciencias naturales'].mean().reset_index()
-
-   # Crear gráfico de barras
-
-   fig = px.bar(datos_agrupados, x="Grupo", y="Ciencias naturales", text_auto=True)
-
-   # Actualizar el diseño para etiquetas y título
-   fig.update_layout(
-       xaxis_title="Grupo",
-       yaxis_title="Ciencias naturales",
-       title="Distribución de puntaje Ciencias naturales por grupo",
-   )
-
-   # Mostrar el gráfico
-   st.plotly_chart(fig)
-  ##########################################################################
-
-   # Mostrar histogramas y boxplots (opcional)
-   st.plotly_chart(px.histogram(datos_area, x="Ciencias naturales", text_auto=True))
-   st.plotly_chart(px.box(datos_area, x="Ciencias naturales"))
-
-with tab4:
-   st.header("Sociales y ciudadanas")
-   # Obtener datos del área actual
-   datos_area = obtener_datos_por_area("Sociales y ciudadanas")
-
-   # Calcular métricas para el área actual
-   metricas_area = calcular_metricas_por_area(datos_area,"Sociales y ciudadanas")
-   
-   # Generar tabla HTML con las métricas
-   tabla_metricas_html = generar_tabla_metricas(metricas_area)
-
-   # Mostrar tarjetas con las métricas
-   col1, col2, col3 = st.columns(3)
-   with col1:
-    promedio = metricas_area['Promedio'].round(2)
-    st.metric(label="Promedio general", value=promedio, delta=0)
-   with col2:
-    maximo = metricas_area['maximo_area']
-    st.metric(label="Máximo", value=maximo)
-   with col3:
-    minimo = metricas_area['minimo_area']
-    st.metric(label="Mínimo", value=minimo)
-   style_metric_cards(border_color="#3A74E7")
-
-   # Mostrar la tabla HTML en la pestaña
-   #st.markdown(tabla_metricas_html, unsafe_allow_html=True)
-
-   ############ GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
-
-   # Agrupar datos por grupo y calcular promedios de puntajes Sociales y ciudadanas
-   datos_agrupados = datos.groupby('Grupo')['Sociales y ciudadanas'].mean().reset_index()
-
-   # Crear gráfico de barras
-
-   fig = px.bar(datos_agrupados, x="Grupo", y="Sociales y ciudadanas", text_auto=True)
-
-   # Actualizar el diseño para etiquetas y título
-   fig.update_layout(
-       xaxis_title="Grupo",
-       yaxis_title="Sociales y ciudadanas",
-       title="Distribución de puntaje Sociales y ciudadanas por grupo",
-   )
-
-   # Mostrar el gráfico
-   st.plotly_chart(fig)
-  ##########################################################################
-
-   # Mostrar histogramas y boxplots (opcional)
-   st.plotly_chart(px.histogram(datos_area, x="Sociales y ciudadanas", text_auto=True))
-   st.plotly_chart(px.box(datos_area, x="Sociales y ciudadanas"))
-
-with tab5:
-   st.header("Inglés")
-   # Obtener datos del área actual
-   datos_area = obtener_datos_por_area("Inglés")
-
-   # Calcular métricas para el área actual
-   metricas_area = calcular_metricas_por_area(datos_area,"Inglés")
-   
-   # Generar tabla HTML con las métricas
-   tabla_metricas_html = generar_tabla_metricas(metricas_area)
-
-   # Mostrar tarjetas con las métricas
-   col1, col2, col3 = st.columns(3)
-   with col1:
-    promedio = metricas_area['Promedio'].round(2)
-    st.metric(label="Promedio general", value=promedio, delta=0)
-   with col2:
-    maximo = metricas_area['maximo_area']
-    st.metric(label="Máximo", value=maximo)
-   with col3:
-    minimo = metricas_area['minimo_area']
-    st.metric(label="Mínimo", value=minimo)
-   style_metric_cards(border_color="#3A74E7")
-
-   # Mostrar la tabla HTML en la pestaña
-   #st.markdown(tabla_metricas_html, unsafe_allow_html=True)
-
-   ############ GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
-
-   # Agrupar datos por grupo y calcular promedios de puntajes Inglés
-   datos_agrupados = datos.groupby('Grupo')['Inglés'].mean().reset_index()
-
-   # Crear gráfico de barras
-
-   fig = px.bar(datos_agrupados, x="Grupo", y="Inglés", text_auto=True)
-
-   # Actualizar el diseño para etiquetas y título
-   fig.update_layout(
-       xaxis_title="Grupo",
-       yaxis_title="Inglés",
-       title="Distribución de puntaje Inglés por grupo",
-   )
-
-   # Mostrar el gráfico
-   st.plotly_chart(fig)
-  ##########################################################################
-
-   # Mostrar histogramas y boxplots (opcional)
-   st.plotly_chart(px.histogram(datos_area, x="Inglés", text_auto=True))
-   st.plotly_chart(px.box(datos_area, x="Inglés"))
-
-##############################################################
-## Analisis por grupo
-################################################################
+##############################################################################################################
+############################ Analisis por grupo ##################################
+##############################################################################################################
         
 # Definir funciones para procesar datos por grupo
 
@@ -542,55 +311,6 @@ def calcular_metricas_por_grupo_area(datos_grupo,columna):
 
   return metricas_grupo_area
 
-def generar_tabla_metricas(metricas_grupo):
-  """
-  Genera una tabla HTML con las métricas de un grupo.
-
-  Argumentos:
-    metricas_grupo (Diccionario): Diccionario con las métricas calculadas.
-
-  Retorno:
-    str: Cadena HTML con la tabla de métricas.
-  """
-  tabla_html = """
-  <table style="border: 1px solid #ddd; border-spacing: 0; width: auto;">
-    <tr>
-      <th style="padding: 8px; border: 1px solid #ddd;">Métrica</th>
-      <th style="padding: 8px; border: 1px solid #ddd;">Valor</th>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Promedio</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{promedio:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Mediana</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{mediana:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Desviación estándar</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">{desviacion_estandar:.2f}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border: 1px solid #ddd;">Percentiles</td>
-      <td style="padding: 8px; border: 1px solid #ddd;">
-        <ul style="list-style: none; margin: 0; padding: 0;">
-          <li>25%: {percentil_25:.2f}</li>
-          <li>50%: {percentil_50:.2f}</li>
-          <li>75%: {percentil_75:.2f}</li>
-        </ul>
-      </td>
-    </tr>
-  </table>
-  """.format(
-    promedio=metricas_grupo["Promedio"],
-    mediana=metricas_grupo["Mediana"],
-    desviacion_estandar=metricas_grupo["Desviación estándar"],
-    percentil_25=metricas_grupo["Percentiles"][0.25],
-    percentil_50=metricas_grupo["Percentiles"][0.5],
-    percentil_75=metricas_grupo["Percentiles"][0.75]
-  )
-  return tabla_html
-
 # Establecer título de la sección
 st.title("Análisis por grupo - Simulacro ICFES")
 
@@ -605,16 +325,16 @@ grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
 
 ###################################################################################
 
-datos_agrupados = datos.groupby('Grupo')[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().reset_index()
+datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().reset_index()
 
 # derretir datos_agrupados por columnas de areas
-datos_derretidos = datos_agrupados.melt(id_vars="Grupo", var_name="Área", value_name="Promedio")
+datos_derretidos = datos_agrupados.melt(id_vars=['Grupo','SIMULACRO'], var_name="Área", value_name="Promedio")
 
 # Seleccionamos grupo
 datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
 
 # Crear gráfico de barras
-fig = px.bar(datos_grupo_seleccionado, x="Área", y="Promedio", text_auto=True)
+fig = px.bar(datos_grupo_seleccionado, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
 
 # Actualizar el diseño para etiquetas y título
 fig.update_layout(
