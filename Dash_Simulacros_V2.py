@@ -17,6 +17,7 @@ for col in datos.select_dtypes(include=np.float64):
     datos[col] = datos[col].round(2)
 datos.head()
 
+datos["Grupo"] = datos["Grupo"].astype(str)
 datos["Matemáticas"] = datos["Matemáticas"].astype(int)
 
 # Definir funciones para calcular métricas
@@ -66,17 +67,18 @@ def calcular_desviacion_estandar(grupo):
 
 st.title("Resumen general - Simulacro ICFES")
 
-## Definir la columna por la que se desea agrupar
+# Definir la columna por la que se desea agrupar
 #columna_grupo = "SIMULACRO"  # Ejemplo: "Género", "Grado", etc.
-#
-## Obtener grupos únicos de la columna elegida
+
+# Obtener grupos únicos de la columna elegida
 #simulacro_unicos = datos[columna_grupo].unique()
-#
-## Crear un selector de grupo con st.selectbox
+
+# Crear un selector de grupo con st.selectbox
 #simulacro_seleccionado = st.selectbox("Seleccione el numero de simulacro:", simulacro_unicos)
-#
+
 #datos = datos[datos["SIMULACRO"] == simulacro_seleccionado]
-## Mostrar tarjetas con métricas generales
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ##################################### DATOS SIMULACROS ####################################
 datos_s1 = datos[datos["SIMULACRO"] == "S1"]
@@ -109,10 +111,12 @@ with col3:
   st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
 style_metric_cards(border_color="#3A74E7")
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 # Mostrar gráfico de barras de distribución de puntajes por grupo
 
 # Agrupar datos por grupo y calcular promedios de puntajes globales
-datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])['Puntaje global'].mean().reset_index()
+datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])['Puntaje global'].mean().round(2).reset_index()
 
 # Crear gráfico de barras
 
@@ -128,8 +132,27 @@ fig.update_layout(
 # Mostrar el gráfico
 st.plotly_chart(fig)
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Ordenar por 'Puntaje global' y seleccionar los top 10
+top_ten_s1 = datos_s1[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+top_ten_s2 = datos_s2[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+
+st.subheader("Top Ten Puntajes Globales")
+
+col1, col2= st.columns(2)
+with col1:
+  st.subheader("Primer Simulacro")
+  st.dataframe(top_ten_s1)
+with col2:
+  st.subheader("Segundo Simulacro")
+  st.dataframe(top_ten_s2)
+#with col3:
+#  minimo = metricas_grupo_area['minimo_area']
+#  st.metric(label="Mínimo", value=minimo)
+
 ##############################################################
-## Definir funciones para procesar datos por área
+# Definir funciones para procesar datos por área
 ################################################################
 
 def obtener_datos_por_area_simulacro(area,simulacro):
@@ -177,6 +200,30 @@ def calcular_metricas_por_area(datos_area_simulacro,area):
 # Establecer título de la sección
 st.title("Análisis por área - Simulacro ICFES")
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+datos_agrupados_simulacro = datos.groupby(['SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
+
+# derretir datos_agrupados por columnas de areas
+datos_derretidos_simulacro = datos_agrupados_simulacro.melt(id_vars=['SIMULACRO'], var_name="Área", value_name="Promedio")
+
+# Seleccionamos grupo
+#datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
+
+# Crear gráfico de barras por area
+fig = px.bar(datos_derretidos_simulacro, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
+
+# Actualizar el diseño para etiquetas y título
+fig.update_layout(
+    xaxis_title="Áreas",
+    yaxis_title="Promedios",
+    title="Distribución de puntajes por área",
+)
+
+# Mostrar el gráfico
+#fig.show()
+st.plotly_chart(fig)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 # Definir lista de áreas para las pestañas
 areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
 
@@ -211,12 +258,10 @@ with col3:
  st.metric(label="Mínimo simulacro 2", value= metricas_area_s2['minimo_area'])
 style_metric_cards(border_color="#3A74E7")
 
-# Mostrar la tabla HTML en la pestaña
-#st.markdown(tabla_metricas_html, unsafe_allow_html=True)
 ########### GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
 
 # Agrupar datos por grupo y calcular promedios de puntajes Matemáticas
-datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[area_seleccionado].mean().reset_index()
+datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[area_seleccionado].mean().round(2).reset_index()
 
 # Crear gráfico de barras
 
@@ -231,17 +276,19 @@ fig.update_layout(
 
 # Mostrar el gráfico
 st.plotly_chart(fig)
-#########################################################################
-# Mostrar histogramas y boxplots (opcional)
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 st.plotly_chart(px.histogram(datos_area_s1, x=area_seleccionado, text_auto=True))
 st.plotly_chart(px.box(datos_area_s1, x=area_seleccionado))
 
-##############################################################################################################
-############################ Analisis por grupo ##################################
-##############################################################################################################
-        
-# Definir funciones para procesar datos por grupo
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+##############################################################################################################
+############################################# ANÁLISI POR GRUPO ##############################################
+##############################################################################################################
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
+# Definir funciones para procesar datos por grupo
 def obtener_datos_por_grupo(grupo):
   """
   Obtiene los datos de un grupo específico (Género, Grado, etc.).
@@ -311,11 +358,12 @@ def calcular_metricas_por_grupo_area(datos_grupo,columna):
 
   return metricas_grupo_area
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Establecer título de la sección
-st.title("Análisis por grupo - Simulacro ICFES")
+st.title("Análisis por grupo - Simulacros ICFES")
 
 # Definir la columna por la que se desea agrupar
-columna_grupo = "Grupo"  # Ejemplo: "Género", "Grado", etc.
+columna_grupo = "Grupo"  
 
 # Obtener grupos únicos de la columna elegida
 grupos_unicos = datos[columna_grupo].unique()
@@ -323,9 +371,7 @@ grupos_unicos = datos[columna_grupo].unique()
 # Crear un selector de grupo con st.selectbox
 grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
 
-###################################################################################
-
-datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().reset_index()
+datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
 
 # derretir datos_agrupados por columnas de areas
 datos_derretidos = datos_agrupados.melt(id_vars=['Grupo','SIMULACRO'], var_name="Área", value_name="Promedio")
@@ -333,22 +379,21 @@ datos_derretidos = datos_agrupados.melt(id_vars=['Grupo','SIMULACRO'], var_name=
 # Seleccionamos grupo
 datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
 
-# Crear gráfico de barras
+# Crear gráfico de barras por area
 fig = px.bar(datos_grupo_seleccionado, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
 
 # Actualizar el diseño para etiquetas y título
 fig.update_layout(
     xaxis_title="Áreas",
     yaxis_title="Promedios",
-    title="Distribución de puntajes por área y por grupo",
+    title="Distribución de puntajes por área para cdad grupo grupo",
 )
 
 # Mostrar el gráfico
 #fig.show()
 st.plotly_chart(fig)
 
-####################################################################################
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Obtener datos del grupo seleccionado
 datos_grupo = obtener_datos_por_grupo(grupo_seleccionado)
 
@@ -366,7 +411,7 @@ with tab1:
    col1, col2, col3 = st.columns(3)
    with col1:
      promedio = metricas_grupo_area['Promedio'].round(2)
-     st.metric(label="Promedio general", value=promedio, delta=0)
+     st.metric(label="Promedio", value=promedio, delta=0)
    with col2:
      maximo = metricas_grupo_area['maximo_area']
      st.metric(label="Máximo", value=maximo)
@@ -374,16 +419,8 @@ with tab1:
      minimo = metricas_grupo_area['minimo_area']
      st.metric(label="Mínimo", value=minimo)
    style_metric_cards(border_color="#3A74E7")
-
-# Generar tabla HTML con las métricas
-#tabla_metricas_html = generar_tabla_metricas(metricas_grupo)
-
-# Mostrar la tabla HTML y otras visualizaciones (opcional)
-#st.markdown(tabla_metricas_html, unsafe_allow_html=True)
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Mostrar histogramas y boxplots (opcional)
 st.plotly_chart(px.histogram(datos_grupo, x="Matemáticas"))
 st.plotly_chart(px.box(datos_grupo, x="Matemáticas"))
-
-  
-
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
