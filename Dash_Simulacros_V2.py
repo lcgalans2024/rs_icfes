@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import altair as alt
 import plotly.express as px
 from statistics import mode,median,mean
 from streamlit_extras.metric_cards import style_metric_cards
@@ -20,8 +21,57 @@ datos.head()
 
 datos["Grupo"] = datos["Grupo"].astype(str)
 datos["Matemáticas"] = datos["Matemáticas"].astype(int)
-##############################################################################################################
+################################################# FUNCIONES #################################################
 
+## Dona
+def make_donut(input_response, input_text, input_color):
+  if input_color == 'blue':
+      chart_color = ['#29b5e8', '#155F7A']
+  if input_color == 'green':
+      chart_color = ['#27AE60', '#12783D']
+  if input_color == 'orange':
+      chart_color = ['#F39C12', '#875A12']
+  if input_color == 'red':
+      chart_color = ['#E74C3C', '#781F16']
+    
+  source = pd.DataFrame({
+      "Topic": ['', input_text],
+      "% value": [100-input_response, input_response]
+  })
+  source_bg = pd.DataFrame({
+      "Topic": ['', input_text],
+      "% value": [100, 0]
+  })
+    
+  plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=25).encode(
+      theta="% value",
+      color= alt.Color("Topic:N",
+                      scale=alt.Scale(
+                          #domain=['A', 'B'],
+                          domain=[input_text, ''],
+                          # range=['#29b5e8', '#155F7A']),  # 31333F
+                          range=chart_color),
+                      legend=None),
+  ).properties(width=130, height=130)
+    
+  text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=32, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
+  plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
+      theta="% value",
+      color= alt.Color("Topic:N",
+                      scale=alt.Scale(
+                          # domain=['A', 'B'],
+                          domain=[input_text, ''],
+                          range=chart_color),  # 31333F
+                      legend=None),
+  ).properties(width=130, height=130)
+  return plot_bg + plot + text
+
+################################################# METRICAS EXTERNAS #################################################
+
+media_nacional = 257.0
+media_depto = 250.0
+media_munpio = 245.0
+####################################################################################################################
 st.title("ANÁLISIS RESULTADOS SIMULACROS ICFES")
 
 tableros = ["Análisis Puntaje Global", "Análisis Por Area", "Análisis Por Grupo", "Análisis Por Año"]
@@ -97,11 +147,13 @@ with tab_1:
 # Mostrar tarjetas con las métricas
   col1, col2, col3 = st.columns(3)
   with col1:
-    st.metric(label="Promedio puntaje global simulacro 1", value=promedio_general_s1)
-    st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2)
+    st.metric(label="Promedio puntaje global simulacro 1", value=promedio_general_s1, delta= round(promedio_general_s1-media_nacional,1))
+    st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2, delta= round(promedio_general_s2-media_nacional,1))
+    #st.altair_chart(make_donut(21, 'Inbound Migration', 'blue'))
   with col2:
     st.metric(label="Máximo puntaje global simulacro 1", value=maximo_s1)
     st.metric(label="Máximo puntaje global simulacro 2", value=maximo_s2)
+    #st.metric(label="last_state_name", value=217, delta=-230)
   with col3:
     st.metric(label="Mínimo puntaje global simulacro 1", value=minimo_s1)
     st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
