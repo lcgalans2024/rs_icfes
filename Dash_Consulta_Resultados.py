@@ -135,6 +135,12 @@ with st.sidebar:
 st.title("TABLERO RESULTADOS SIMULACROS ICFES")
 st.subheader("Resultados")
 
+################################################################################
+tableros = ["Puntaje Global", "Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
+
+tab_1, tab_2, tab_3, tab_4 = st.tabs(tableros)
+################################################################################
+
 # Definir la columna por la que se desea agrupar
 columna_grupo = "SIMULACRO"  
 
