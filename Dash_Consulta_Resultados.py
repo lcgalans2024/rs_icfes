@@ -1,13 +1,21 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import altair as alt
 import plotly.express as px
 from statistics import mode,median,mean
 from streamlit_extras.metric_cards import style_metric_cards
 import plotly.graph_objects as go
 from scipy import stats
 
-st.set_page_config(layout = "wide")
+############################### Page configuration ###############################
+st.set_page_config(
+    page_title="Dashboard Resultados Simulacros ICFES",
+    page_icon="chart_with_upwards_trend",
+    layout="wide",
+    initial_sidebar_state="expanded")
+
+alt.themes.enable("dark")
 
 ###########################################################################
 
@@ -96,9 +104,51 @@ def create_progress_bar(percentage):
 
     return fig
 
-###############################################################################
+#Donut chart
 
-#Cargamos los datos
+def make_donut(input_response, input_text, input_color):
+  if input_color == 'blue':
+      chart_color = ['#29b5e8', '#155F7A']
+  if input_color == 'green':
+      chart_color = ['#27AE60', '#12783D']
+  if input_color == 'orange':
+      chart_color = ['#F39C12', '#875A12']
+  if input_color == 'red':
+      chart_color = ['#E74C3C', '#781F16']
+    
+  source = pd.DataFrame({
+      "Topic": ['', input_text],
+      "value": [500-input_response, input_response]
+  })
+  source_bg = pd.DataFrame({
+      "Topic": ['', input_text],
+      "value": [500, 0]
+  })
+    
+  plot = alt.Chart(source).mark_arc(innerRadius=100, cornerRadius=40).encode(
+      theta="value",
+      color= alt.Color("Topic:N",
+                      scale=alt.Scale(
+                          #domain=['A', 'B'],
+                          domain=[input_text, ''],
+                          # range=['#29b5e8', '#155F7A']),  # 31333F
+                          range=chart_color),
+                      legend=None),
+  ).properties(width=330, height=330)
+    
+  text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
+  plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
+      theta="value",
+      color= alt.Color("Topic:N",
+                      scale=alt.Scale(
+                          # domain=['A', 'B'],
+                          domain=[input_text, ''],
+                          range=chart_color),  # 31333F
+                      legend=None),
+  ).properties(width=330, height=330)
+  return plot_bg + plot + text
+
+############################### Load Data ###############################
 datos = cargar_datos()
 
 datos_s1 = datos[datos["SIMULACRO"] == "S1"]
@@ -138,126 +188,49 @@ st.subheader("Resultados")
 ################################################################################
 tableros = ["Puntaje Global", "Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
 
-tab_1, tab_2, tab_3, tab_4 = st.tabs(tableros)
-################################################################################
+tab_1, tab_2, tab_3, tab_4, tab_5, tab_6 = st.tabs(tableros)
 
-# Definir la columna por la que se desea agrupar
-columna_grupo = "SIMULACRO"  
+##############################################################################################################
+########################################## ANÁLISIS PUNTAJE GLOBAL ###########################################
+##############################################################################################################
 
-# Obtener grupos únicos de la columna elegida
-grupos_unicos = result_df[columna_grupo].unique()
+with tab_1:
+    # Definir la columna por la que se desea agrupar
+    columna_grupo = "SIMULACRO"  
 
-# Crear un selector de grupo con st.selectbox
-grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
+    # Obtener grupos únicos de la columna elegida
+    grupos_unicos = result_df[columna_grupo].unique()
 
-# Seleccionamos grupo
-datos_simulacro_seleccionado = datos[datos.SIMULACRO== grupo_seleccionado]
+    # Crear un selector de grupo con st.selectbox
+    grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
 
-promedio = round(datos_simulacro_seleccionado['Puntaje global'].mean(),2)
-maximo = max(datos_simulacro_seleccionado['Puntaje global'])
-minimo = min(datos_simulacro_seleccionado['Puntaje global'])
+    # Seleccionamos grupo
+    datos_simulacro_seleccionado = datos[datos.SIMULACRO== grupo_seleccionado]
 
-########################### Generar el gráfico de barra de progreso ######################
+    promedio = round(datos_simulacro_seleccionado['Puntaje global'].mean(),2)
+    maximo = max(datos_simulacro_seleccionado['Puntaje global'])
+    minimo = min(datos_simulacro_seleccionado['Puntaje global'])
 
-df_usuario = filtrar_datos(calve_docente, datos_simulacro_seleccionado)
+    df_usuario = filtrar_datos(calve_docente, datos_simulacro_seleccionado)
 
-# Tu puntuación
-your_score_global = df_usuario['Puntaje global'].iloc[0]
+    # Tu puntuación
+    your_score_global = df_usuario['Puntaje global'].iloc[0]
 
-# Calcular el percentil
-percentile = round(stats.percentileofscore(datos_simulacro_seleccionado['Puntaje global'], your_score_global),1)
+    # Calcular el percentil
+    percentile = round(stats.percentileofscore(datos_simulacro_seleccionado['Puntaje global'], your_score_global),1)
 
-figu = create_progress_bar(percentile)
+    figu = create_progress_bar(percentile)
 
-# Mostrar el gráfico en el tablero de Streamlit
-
-
-# Mostrar tarjetas con las métricas
-col1, col2 = st.columns(2)
-with col1:
-  st.metric(label="Puntaje global", value=your_score_global)
-  #st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2)
-with col2:
-  st.plotly_chart(figu)
-  #st.metric(label="Máximo puntaje global simulacro 1", value=maximo)
-  #st.metric(label="Máximo puntaje global simulacro 2", value=maximo_s2)
-#with col3:
-  #st.metric(label="Mínimo puntaje global simulacro 1", value=minimo)
-  #st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
-style_metric_cards(border_color="#3A74E7")
-
-#########################################################################################
-if submitted:
-    
-        result_df = filtrar_datos(calve_docente, datos)
-        result_df = result_df.round(2)
-        #st.table(result_df)
-
-        # Tu puntuación
-        your_score = result_df['Puntaje global'].iloc[0]
-
-        # Calcular el percentil
-        percentile = round((datos['Puntaje global'] <= your_score).sum() * 100 / len(datos),2)
-
-        # Mostrar tarjetas con las métricas
-        col1, col2, col3 = st.columns(3)
-        with col1:
-          st.metric(label="Promedio puntaje global simulacro 1", value=percentile)
-          #st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2)
-        with col2:
-          st.metric(label="Máximo puntaje global simulacro 1", value=maximo)
-          #st.metric(label="Máximo puntaje global simulacro 2", value=maximo_s2)
-        with col3:
-          st.metric(label="Mínimo puntaje global simulacro 1", value=minimo)
-          #st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
-        style_metric_cards(border_color="#3A74E7")
-
-        st.header(f'Tu puntuación de {your_score} está en el percentil {percentile}')
-
-        # Generar el gráfico de barra de progreso
-        figu = create_progress_bar(percentile)
-
-        # Mostrar el gráfico en el tablero de Streamlit
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.write('Puntaje Global')
+        st.altair_chart(make_donut(your_score_global, "Puntaje global", "green"))
+    with col2:
+        st.write('Puntaje Global')
+        st.altair_chart(make_donut(promedio, "Puntaje global promedio", "green"))
+    with col3:
         st.plotly_chart(figu)
 
-        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    #st.metric(label="Puntaje global", value=your_score_global)
 
-        #df = px.data.gapminder().query("continent == 'Oceania'")
-        fig = px.bar(result_df, y='Nombre alumno', x='Puntaje global'
-             #,hover_data=['lifeExp', 'gdpPercap']
-             ,color='SIMULACRO'
-             ,text_auto=True
-             #,labels={'pop':'population of Canada'}, height=400
-             )
-        
-        # Actualizar el diseño para etiquetas y título
-        fig.update_layout(
-            xaxis_title="Puntaje Global",
-            yaxis_title="",
-            title="Distribución de puntaje global",
-        )
-
-        st.plotly_chart(fig)
-
-        #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        datos_agrupados_simulacro = result_df.groupby(['SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
-
-        # derretir datos_agrupados por columnas de areas
-        datos_derretidos_simulacro = datos_agrupados_simulacro.melt(id_vars=['SIMULACRO'], var_name="Área", value_name="Promedio")
-
-        # Seleccionamos grupo
-        #datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
-
-        # Crear gráfico de barras por area
-        fig = px.bar(datos_derretidos_simulacro, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
-
-        # Actualizar el diseño para etiquetas y título
-        fig.update_layout(
-            xaxis_title="Áreas",
-            yaxis_title="Promedios",
-            title="Distribución de puntajes por área",
-        )
-
-        # Mostrar el gráfico
-        #fig.show()
-        st.plotly_chart(fig)
+    style_metric_cards(border_color="#3A74E7")
