@@ -106,112 +106,48 @@ def create_progress_bar(percentage):
 
 #Donut chart
 
-def make_donut_color(input_response, percent, input_text, input_color):
+def make_donut_color(input_response, sobre, input_text, input_color):
   
   if input_response < q1:
       chart_color = ['#E74C3C', '#781F16']
-
-      source = pd.DataFrame({
-          "Topic": ['', input_text],
-          "value": [500-input_response, input_response]
-      })
-      source_bg = pd.DataFrame({
-          "Topic": ['', input_text],
-          "value": [500, 0]
-      })
-        
-      plot = alt.Chart(source).mark_arc(innerRadius=100, cornerRadius=40).encode(
-          theta="value",
-          color= alt.Color("Topic:N",
-                          scale=alt.Scale(
-                              #domain=['A', 'B'],
-                              domain=[input_text, ''],
-                              # range=['#29b5e8', '#155F7A']),  # 31333F
-                              range=chart_color),
-                          legend=None),
-      ).properties(width=330, height=330)
-        
-      text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
-      plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
-          theta="value",
-          color= alt.Color("Topic:N",
-                          scale=alt.Scale(
-                              # domain=['A', 'B'],
-                              domain=[input_text, ''],
-                              range=chart_color),  # 31333F
-                          legend=None),
-      ).properties(width=330, height=330)
-
   elif input_response < q3:
       chart_color = ['#F39C12', '#875A12']
-
-      source = pd.DataFrame({
-          "Topic": ['', input_text],
-          "value": [500-input_response, input_response]
-      })
-      source_bg = pd.DataFrame({
-          "Topic": ['', input_text],
-          "value": [500, 0]
-      })
-        
-      plot = alt.Chart(source).mark_arc(innerRadius=100, cornerRadius=40).encode(
-          theta="value",
-          color= alt.Color("Topic:N",
-                          scale=alt.Scale(
-                              #domain=['A', 'B'],
-                              domain=[input_text, ''],
-                              # range=['#29b5e8', '#155F7A']),  # 31333F
-                              range=chart_color),
-                          legend=None),
-      ).properties(width=330, height=330)
-        
-      text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
-      plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
-          theta="value",
-          color= alt.Color("Topic:N",
-                          scale=alt.Scale(
-                              # domain=['A', 'B'],
-                              domain=[input_text, ''],
-                              range=chart_color),  # 31333F
-                          legend=None),
-      ).properties(width=330, height=330)
-
   else:
       chart_color = ['#27AE60', '#12783D']
+  source = pd.DataFrame({
+      "Topic": ['', input_text],
+      "value": [sobre-input_response, input_response]
+  })
+  source_bg = pd.DataFrame({
+      "Topic": ['', input_text],
+      "value": [sobre, 0]
+  })
+    
+  plot = alt.Chart(source).mark_arc(innerRadius=100, cornerRadius=40).encode(
+      theta="value",
+      color= alt.Color("Topic:N",
+                      scale=alt.Scale(
+                          #domain=['A', 'B'],
+                          domain=[input_text, ''],
+                          # range=['#29b5e8', '#155F7A']),  # 31333F
+                          range=chart_color),
+                      legend=None),
+  ).properties(width=330, height=330)
+    
+  text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
+  plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
+      theta="value",
+      color= alt.Color("Topic:N",
+                      scale=alt.Scale(
+                          # domain=['A', 'B'],
+                          domain=[input_text, ''],
+                          range=chart_color),  # 31333F
+                      legend=None),
+  ).properties(width=330, height=330)
 
-      source = pd.DataFrame({
-          "Topic": ['', input_text],
-          "value": [500-input_response, input_response]
-      })
-      source_bg = pd.DataFrame({
-          "Topic": ['', input_text],
-          "value": [500, 0]
-      })
-        
-      plot = alt.Chart(source).mark_arc(innerRadius=100, cornerRadius=40).encode(
-          theta="value",
-          color= alt.Color("Topic:N",
-                          scale=alt.Scale(
-                              #domain=['A', 'B'],
-                              domain=[input_text, ''],
-                              # range=['#29b5e8', '#155F7A']),  # 31333F
-                              range=chart_color),
-                          legend=None),
-      ).properties(width=330, height=330)
-        
-      text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
-      plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
-          theta="value",
-          color= alt.Color("Topic:N",
-                          scale=alt.Scale(
-                              # domain=['A', 'B'],
-                              domain=[input_text, ''],
-                              range=chart_color),  # 31333F
-                          legend=None),
-      ).properties(width=330, height=330)
   return plot_bg + plot + text     
 
-def make_donut(input_response, input_text, input_color):
+def make_donut(input_response, sobre, input_text, input_color):
   if input_color == 'blue':
       chart_color = ['#29b5e8', '#155F7A']
   if input_color == 'green':
@@ -223,11 +159,11 @@ def make_donut(input_response, input_text, input_color):
     
   source = pd.DataFrame({
       "Topic": ['', input_text],
-      "value": [500-input_response, input_response]
+      "value": [sobre-input_response, input_response]
   })
   source_bg = pd.DataFrame({
       "Topic": ['', input_text],
-      "value": [500, 0]
+      "value": [sobre, 0]
   })
     
   plot = alt.Chart(source).mark_arc(innerRadius=100, cornerRadius=40).encode(
@@ -380,14 +316,57 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write('Puntaje Global sobre 500')
-            st.altair_chart(make_donut_color(your_score_global, percentile, "Puntaje global", "green"))
+            st.altair_chart(make_donut_color(your_score_global, 500, "Puntaje global", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
             st.altair_chart(make_donut_porcentaje(percentile, "Percentil Puntaje global", "green"))
         with col3:
             st.write('Promedio Puntaje Global sobre 500')
-            st.altair_chart(make_donut(promedio, "Puntaje global promedio", "blue"))
+            st.altair_chart(make_donut(promedio, 500, "Puntaje global promedio", "blue"))
+
+        #st.metric(label="Puntaje global", value=your_score_global)
+
+        style_metric_cards(border_color="#3A74E7")
+
+    ##############################################################################################################
+    ########################################## PUNTAJE MATEMÁTICAS ###########################################
+    ##############################################################################################################
+
+    with tab_2:
+
+        promedio = round(datos_simulacro_seleccionado['Matemáticas'].mean(),2)
+        maximo = max(datos_simulacro_seleccionado['Matemáticas'])
+        minimo = min(datos_simulacro_seleccionado['Matemáticas'])
+        # Calcular los cuartiles
+        cuartiles = datos_simulacro_seleccionado['Matemáticas'].quantile([0.25, 0.5, 0.75])
+        q1 = cuartiles[0.25]
+        q2 = cuartiles[0.5]
+        q3 = cuartiles[0.75]
+        
+        st.markdown(f"**Quartiles:** {cuartiles}")
+
+        df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
+
+        # Tu puntuación
+        your_score_global = df_usuario['Matemáticas'].iloc[0]
+
+        # Calcular el percentil
+        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado['Matemáticas'], your_score_global),1)
+
+        figu = create_progress_bar(percentile)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write('Puntaje Matemáticas sobre 100')
+            st.altair_chart(make_donut_color(your_score_global, 100, "Matemáticas", "green"))
+        with col2:
+            #st.plotly_chart(figu)
+            st.write('Percentil Puntaje')
+            st.altair_chart(make_donut_porcentaje(percentile, "Percentil Puntaje Matemáticas", "green"))
+        with col3:
+            st.write('Promedio Puntaje Matemáticas sobre 100')
+            st.altair_chart(make_donut(promedio, 100, "Puntaje Matemáticas promedio", "blue"))
 
         #st.metric(label="Puntaje global", value=your_score_global)
 
