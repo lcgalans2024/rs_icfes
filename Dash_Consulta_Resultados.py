@@ -132,7 +132,7 @@ def make_donut_color(input_response, sobre, input_text, input_color):
                           # range=['#29b5e8', '#155F7A']),  # 31333F
                           range=chart_color),
                       legend=None),
-  ).properties(width=330, height=330)
+  ).properties(width=300, height=300)
     
   text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
   plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
@@ -143,7 +143,7 @@ def make_donut_color(input_response, sobre, input_text, input_color):
                           domain=[input_text, ''],
                           range=chart_color),  # 31333F
                       legend=None),
-  ).properties(width=330, height=330)
+  ).properties(width=300, height=300)
 
   return plot_bg + plot + text     
 
@@ -175,7 +175,7 @@ def make_donut(input_response, sobre, input_text, input_color):
                           # range=['#29b5e8', '#155F7A']),  # 31333F
                           range=chart_color),
                       legend=None),
-  ).properties(width=330, height=330)
+  ).properties(width=300, height=300)
     
   text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
   plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
@@ -186,7 +186,7 @@ def make_donut(input_response, sobre, input_text, input_color):
                           domain=[input_text, ''],
                           range=chart_color),  # 31333F
                       legend=None),
-  ).properties(width=330, height=330)
+  ).properties(width=300, height=300)
   return plot_bg + plot + text
 
 def make_donut_porcentaje(input_response, input_text, input_color):
@@ -215,7 +215,7 @@ def make_donut_porcentaje(input_response, input_text, input_color):
                           # range=['#29b5e8', '#155F7A']),  # 31333F
                           range=chart_color),
                       legend=None),
-  ).properties(width=330, height=330)
+  ).properties(width=300, height=300)
     
   text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=65, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
   plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=100, cornerRadius=40).encode(
@@ -226,7 +226,7 @@ def make_donut_porcentaje(input_response, input_text, input_color):
                           domain=[input_text, ''],
                           range=chart_color),  # 31333F
                       legend=None),
-  ).properties(width=330, height=330)
+  ).properties(width=300, height=300)
   return plot_bg + plot + text
 
 ############################### Load Data ###############################
@@ -261,6 +261,7 @@ with st.sidebar:
               st.markdown("**ESTUDIANTE:**")
               st.markdown(f"{est_nombre}")
               st.markdown(f"**GRUPO:** {grupo}")
+##############################################################################
 
 # Tablero principal
 st.title("TABLERO: **RESULTADOS SIMULACROS ICFES**")
@@ -301,7 +302,7 @@ if len(clave_docente) > 0:
         q2 = cuartiles[0.5]
         q3 = cuartiles[0.75]
         
-        st.markdown(f"**Quartiles:** {cuartiles}")
+        #st.markdown(f"**Quartiles:** {cuartiles}")
 
         df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
 
@@ -344,7 +345,7 @@ if len(clave_docente) > 0:
         q2 = cuartiles[0.5]
         q3 = cuartiles[0.75]
         
-        st.markdown(f"**Quartiles:** {cuartiles}")
+        #st.markdown(f"**Quartiles:** {cuartiles}")
 
         df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
 
@@ -367,6 +368,186 @@ if len(clave_docente) > 0:
         with col3:
             st.write('Promedio Puntaje Matemáticas sobre 100')
             st.altair_chart(make_donut(promedio, 100, "Puntaje Matemáticas promedio", "blue"))
+
+        #st.metric(label="Puntaje global", value=your_score_global)
+
+        style_metric_cards(border_color="#3A74E7")
+
+    ##############################################################################################################
+    ########################################## PUNTAJE Lectura crítica ###########################################
+    ##############################################################################################################
+
+    with tab_3:
+
+        area_puntaje = "Lectura crítica"
+
+        promedio = round(datos_simulacro_seleccionado['Lectura crítica'].mean(),2)
+        maximo = max(datos_simulacro_seleccionado['Lectura crítica'])
+        minimo = min(datos_simulacro_seleccionado['Lectura crítica'])
+        # Calcular los cuartiles
+        cuartiles = datos_simulacro_seleccionado['Lectura crítica'].quantile([0.25, 0.5, 0.75])
+        q1 = cuartiles[0.25]
+        q2 = cuartiles[0.5]
+        q3 = cuartiles[0.75]
+        
+        #st.markdown(f"**Quartiles:** {cuartiles}")
+
+        df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
+
+        # Tu puntuación
+        your_score_global = df_usuario['Lectura crítica'].iloc[0]
+
+        # Calcular el percentil
+        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado['Lectura crítica'], your_score_global),1)
+
+        figu = create_progress_bar(percentile)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write('Puntaje Lectura crítica sobre 100')
+            st.altair_chart(make_donut_color(your_score_global, 100, "Lectura crítica", "green"))
+        with col2:
+            #st.plotly_chart(figu)
+            st.write('Percentil Puntaje')
+            st.altair_chart(make_donut_porcentaje(percentile, "Percentil Puntaje Lectura crítica", "green"))
+        with col3:
+            st.write('Promedio Puntaje Lectura crítica sobre 100')
+            st.altair_chart(make_donut(promedio, 100, "Puntaje Lectura crítica promedio", "blue"))
+
+        #st.metric(label="Puntaje global", value=your_score_global)
+
+        style_metric_cards(border_color="#3A74E7")
+
+    ##############################################################################################################
+    ########################################## PUNTAJE Ciencias naturales ###########################################
+    ##############################################################################################################
+
+    with tab_4:
+
+        area_puntaje = "Ciencias naturales"
+
+        promedio = round(datos_simulacro_seleccionado[f'{area_puntaje}'].mean(),2)
+        maximo = max(datos_simulacro_seleccionado[f'{area_puntaje}'])
+        minimo = min(datos_simulacro_seleccionado[f'{area_puntaje}'])
+        # Calcular los cuartiles
+        cuartiles = datos_simulacro_seleccionado[f'{area_puntaje}'].quantile([0.25, 0.5, 0.75])
+        q1 = cuartiles[0.25]
+        q2 = cuartiles[0.5]
+        q3 = cuartiles[0.75]
+        
+        #st.markdown(f"**Quartiles:** {cuartiles}")
+
+        df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
+
+        # Tu puntuación
+        your_score_global = df_usuario[f'{area_puntaje}'].iloc[0]
+
+        # Calcular el percentil
+        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado[f'{area_puntaje}'], your_score_global),1)
+
+        figu = create_progress_bar(percentile)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(f'Puntaje {area_puntaje} sobre 100')
+            st.altair_chart(make_donut_color(your_score_global, 100, f"{area_puntaje}", "green"))
+        with col2:
+            #st.plotly_chart(figu)
+            st.write('Percentil Puntaje')
+            st.altair_chart(make_donut_porcentaje(percentile, f"Percentil Puntaje {area_puntaje}", "green"))
+        with col3:
+            st.write(f'Promedio Puntaje {area_puntaje} sobre 100')
+            st.altair_chart(make_donut(promedio, 100, f"Puntaje {area_puntaje} promedio", "blue"))
+
+        #st.metric(label="Puntaje global", value=your_score_global)
+
+        style_metric_cards(border_color="#3A74E7")
+
+    ##############################################################################################################
+    ########################################## PUNTAJE Sociales y ciudadanas ###########################################
+    ##############################################################################################################
+
+    with tab_5:
+
+        area_puntaje = "Sociales y ciudadanas"
+
+        promedio = round(datos_simulacro_seleccionado[f'{area_puntaje}'].mean(),2)
+        maximo = max(datos_simulacro_seleccionado[f'{area_puntaje}'])
+        minimo = min(datos_simulacro_seleccionado[f'{area_puntaje}'])
+        # Calcular los cuartiles
+        cuartiles = datos_simulacro_seleccionado[f'{area_puntaje}'].quantile([0.25, 0.5, 0.75])
+        q1 = cuartiles[0.25]
+        q2 = cuartiles[0.5]
+        q3 = cuartiles[0.75]
+        
+        #st.markdown(f"**Quartiles:** {cuartiles}")
+
+        df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
+
+        # Tu puntuación
+        your_score_global = df_usuario[f'{area_puntaje}'].iloc[0]
+
+        # Calcular el percentil
+        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado[f'{area_puntaje}'], your_score_global),1)
+
+        figu = create_progress_bar(percentile)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(f'Puntaje {area_puntaje} sobre 100')
+            st.altair_chart(make_donut_color(your_score_global, 100, f"{area_puntaje}", "green"))
+        with col2:
+            #st.plotly_chart(figu)
+            st.write('Percentil Puntaje')
+            st.altair_chart(make_donut_porcentaje(percentile, f"Percentil Puntaje {area_puntaje}", "green"))
+        with col3:
+            st.write(f'Promedio Puntaje {area_puntaje} sobre 100')
+            st.altair_chart(make_donut(promedio, 100, f"Puntaje {area_puntaje} promedio", "blue"))
+
+        #st.metric(label="Puntaje global", value=your_score_global)
+
+        style_metric_cards(border_color="#3A74E7")
+
+    ##############################################################################################################
+    ########################################## PUNTAJE Inglés ###########################################
+    ##############################################################################################################
+
+    with tab_6:
+
+        area_puntaje = "Inglés"
+
+        promedio = round(datos_simulacro_seleccionado[f'{area_puntaje}'].mean(),2)
+        maximo = max(datos_simulacro_seleccionado[f'{area_puntaje}'])
+        minimo = min(datos_simulacro_seleccionado[f'{area_puntaje}'])
+        # Calcular los cuartiles
+        cuartiles = datos_simulacro_seleccionado[f'{area_puntaje}'].quantile([0.25, 0.5, 0.75])
+        q1 = cuartiles[0.25]
+        q2 = cuartiles[0.5]
+        q3 = cuartiles[0.75]
+        
+        #st.markdown(f"**Quartiles:** {cuartiles}")
+
+        df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
+
+        # Tu puntuación
+        your_score_global = df_usuario[f'{area_puntaje}'].iloc[0]
+
+        # Calcular el percentil
+        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado[f'{area_puntaje}'], your_score_global),1)
+
+        figu = create_progress_bar(percentile)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(f'Puntaje {area_puntaje} sobre 100')
+            st.altair_chart(make_donut_color(your_score_global, 100, f"{area_puntaje}", "green"))
+        with col2:
+            #st.plotly_chart(figu)
+            st.write('Percentil Puntaje')
+            st.altair_chart(make_donut_porcentaje(percentile, f"Percentil Puntaje {area_puntaje}", "green"))
+        with col3:
+            st.write(f'Promedio Puntaje {area_puntaje} sobre 100')
+            st.altair_chart(make_donut(promedio, 100, f"Puntaje {area_puntaje} promedio", "blue"))
 
         #st.metric(label="Puntaje global", value=your_score_global)
 
