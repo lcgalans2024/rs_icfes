@@ -26,7 +26,7 @@ def cargar_datos():
 
 @st.cache_data
 def filtrar_datos(usuario, df):
-    df_filtrado = df[df['Nombre alumno'] == str(usuario)]
+    df_filtrado = df[df['DOCUMENTO'] == str(usuario)]
     return df_filtrado.round(2)
 
 def calcular_resultados(df):
@@ -108,9 +108,9 @@ def create_progress_bar(percentage):
 
 def make_donut_color(input_response, sobre, input_text, input_color):
   
-  if input_response < q1:
+  if input_response <= q1:
       chart_color = ['#E74C3C', '#781F16']
-  elif input_response < q3:
+  elif input_response <= q3:
       chart_color = ['#F39C12', '#875A12']
   else:
       chart_color = ['#27AE60', '#12783D']
@@ -190,9 +190,9 @@ def make_donut(input_response, sobre, input_text, input_color):
   return plot_bg + plot + text
 
 def make_donut_porcentaje(input_response, input_text, input_color):
-  if input_response < 25:
+  if input_response <= 25:
       chart_color = ['#E74C3C', '#781F16']
-  elif input_response < 75:
+  elif input_response <= 75:
       chart_color = ['#F39C12', '#875A12']
   else:
       chart_color = ['#27AE60', '#12783D']
@@ -244,12 +244,17 @@ datos["Matemáticas"] = datos["Matemáticas"].astype(int)
 
 ##############################################################################
 
+# Store the initial value of widgets in session state
+if "visibility" not in st.session_state:
+    st.session_state.visibility = "visible"
+    st.session_state.disabled = False
+
 # Barra lateral
 with st.sidebar:
     #BAENA CHALARCA JERONIMO
     st.header("DATOS DEL USUARIO")
 
-    clave_docente = st.text_input("Contraseña", '', type='password')
+    clave_docente = st.text_input("Documento", type='password')
     submitted = st.button("Consultar")
 
     result_df = filtrar_datos(clave_docente, datos)
