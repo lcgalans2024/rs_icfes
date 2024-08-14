@@ -20,8 +20,8 @@ alt.themes.enable("dark")
 ###########################################################################
 
 @st.cache_data
-def cargar_datos():
-    df = pd.read_excel("Notas_Master.xlsx",sheet_name="105")
+def cargar_datos(file_path, nombre_hoja):
+    df = pd.read_excel(file_path,sheet_name=nombre_hoja)
     return df#.copy()
 
 @st.cache_data
@@ -43,19 +43,22 @@ def calcular_resultados(df):
     return resultado
 
 ############################### Load Data ###############################
-datos = cargar_datos()
+file_path = "Notas_Master.xlsx"
 
-#datos_s1 = datos[datos["SIMULACRO"] == "S1"]
-#datos_s2 = datos[datos["SIMULACRO"] == "S2"]
+# Usar ExcelFile para obtener los nombres de las hojas
+excel_file = pd.ExcelFile(file_path)
 
-datos["Matricula"] = datos["Matricula"].astype(str)
-datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
+# Obtener los nombres de las hojas
+sheet_names = excel_file.sheet_names
 
-for col in datos.select_dtypes(include=np.float64):
-    datos[col] = datos[col].round(2)
-datos.head()
-
-
+#datos = cargar_datos(file_path, )
+#
+#datos["Matricula"] = datos["Matricula"].astype(str)
+#datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
+#
+#for col in datos.select_dtypes(include=np.float64):
+#    datos[col] = datos[col].round(2)
+#datos.head()
 
 ##############################################################################
 
@@ -70,22 +73,33 @@ with st.sidebar:
     st.header("DATOS DEL USUARIO")
 
     clave_docente = st.text_input("Documento", type='password')
+
+    # Crear un selector en Streamlit con los nombres de las hojas
+    selected_sheet = st.selectbox("Seleccione su grupo", sheet_names)
+
     submitted = st.button("Consultar")
+
+    datos = cargar_datos(file_path, selected_sheet)
+
+    datos["Matricula"] = datos["Matricula"].astype(str)
+    datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
+
+    for col in datos.select_dtypes(include=np.float64):
+        datos[col] = datos[col].round(2)
 
     result_df = filtrar_datos(clave_docente, datos)
 
     if not result_df.empty:
          with st.container(border=True):
               est_nombre = result_df['Nombre_estudiante'].iloc[0]
-              grupo = "105"#result_df['Grupo'].iloc[0]
               st.markdown("**ESTUDIANTE:**")
               st.markdown(f"{est_nombre}")
-              st.markdown(f"**GRUPO:** {grupo}")
+              st.markdown(f"**GRUPO:** {selected_sheet}")
 
 ##############################################################################
 
 # Tablero principal
-st.title("TABLERO: **NOTAS MASTER MATEMÁTICAS**")
+st.title("TABLERO: **NOTAS MASTER**")
 
 #st.dataframe(datos.head())
 
