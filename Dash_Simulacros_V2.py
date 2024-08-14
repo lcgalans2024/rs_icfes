@@ -132,6 +132,7 @@ with tab_1:
 ##################################### DATOS SIMULACROS ####################################
   datos_s1 = datos[datos["SIMULACRO"] == "S1"]
   datos_s2 = datos[datos["SIMULACRO"] == "S2"]
+  datos_s3 = datos[datos["SIMULACRO"] == "S3"]
 ###########################################################################################
 
 # Calcular metricas simulacro 1
@@ -144,19 +145,27 @@ with tab_1:
   maximo_s2 = max(datos_s2['Puntaje global'])
   minimo_s2 = min(datos_s2['Puntaje global'])
 
+# Calcular metricas simulacro 2
+  promedio_general_s3 = round(datos_s3['Puntaje global'].mean(),2)
+  maximo_s3 = max(datos_s3['Puntaje global'])
+  minimo_s3 = min(datos_s3['Puntaje global'])
+
 # Mostrar tarjetas con las métricas
   col1, col2, col3 = st.columns(3)
   with col1:
     st.metric(label="Promedio puntaje global simulacro 1", value=promedio_general_s1, delta= round(promedio_general_s1-media_nacional,1))
     st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2, delta= round(promedio_general_s2-media_nacional,1))
+    st.metric(label="Promedio puntaje global simulacro 3", value=promedio_general_s3, delta= round(promedio_general_s3-media_nacional,1))
     #st.altair_chart(make_donut(21, 'Inbound Migration', 'blue'))
   with col2:
     st.metric(label="Máximo puntaje global simulacro 1", value=maximo_s1)
     st.metric(label="Máximo puntaje global simulacro 2", value=maximo_s2)
+    st.metric(label="Máximo puntaje global simulacro 3", value=maximo_s3)
     #st.metric(label="last_state_name", value=217, delta=-230)
   with col3:
     st.metric(label="Mínimo puntaje global simulacro 1", value=minimo_s1)
     st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
+    st.metric(label="Mínimo puntaje global simulacro 3", value=minimo_s3)
   style_metric_cards(border_color="#3A74E7")
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,19 +194,20 @@ with tab_1:
   #Ordenar por 'Puntaje global' y seleccionar los top 10
   top_ten_s1 = datos_s1[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
   top_ten_s2 = datos_s2[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+  top_ten_s3 = datos_s3[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
 
   st.subheader("Top Ten Puntajes Globales")
 
-  col1, col2= st.columns(2)
+  col1, col2, col3= st.columns(3)
   with col1:
     st.subheader("Primer Simulacro")
     st.dataframe(top_ten_s1)
   with col2:
     st.subheader("Segundo Simulacro")
     st.dataframe(top_ten_s2)
-  #with col3:
-  #  minimo = metricas_grupo_area['minimo_area']
-  #  st.metric(label="Mínimo", value=minimo)
+  with col3:
+    st.subheader("Tercer Simulacro")
+    st.dataframe(top_ten_s3)
 
 ##############################################################################################################
 ############################################# ANÁLISI POR AREA ###############################################
@@ -289,10 +299,12 @@ with tab_2:
   # Obtener datos del área actual
   datos_area_s1 = obtener_datos_por_area_simulacro(area_seleccionado,"S1")
   datos_area_s2 = obtener_datos_por_area_simulacro(area_seleccionado,"S2")
+  datos_area_s3 = obtener_datos_por_area_simulacro(area_seleccionado,"S3")
 
   # Calcular métricas para el área actual
   metricas_area_s1 = calcular_metricas_por_area(datos_area_s1,area_seleccionado)
   metricas_area_s2 = calcular_metricas_por_area(datos_area_s2,area_seleccionado)
+  metricas_area_s3 = calcular_metricas_por_area(datos_area_s3,area_seleccionado)
   # Generar tabla HTML con las métricas
   #tabla_metricas_html = generar_tabla_metricas(metricas_area)
 
@@ -301,12 +313,15 @@ with tab_2:
   with col1:
    st.metric(label="Promedio global simulacro 1", value=metricas_area_s1['Promedio'].round(2))
    st.metric(label="Promedio global simulacro 2", value=metricas_area_s2['Promedio'].round(2))
+   st.metric(label="Promedio global simulacro 3", value=metricas_area_s3['Promedio'].round(2))
   with col2:
    st.metric(label="Máximo simulacro 1", value=metricas_area_s1['maximo_area'])
    st.metric(label="Máximo simulacro 2", value=metricas_area_s2['maximo_area'])
+   st.metric(label="Máximo simulacro 3", value=metricas_area_s2['maximo_area'])
   with col3:
    st.metric(label="Mínimo simulacro 1", value= metricas_area_s1['minimo_area'])
    st.metric(label="Mínimo simulacro 2", value= metricas_area_s2['minimo_area'])
+   st.metric(label="Mínimo simulacro 3", value= metricas_area_s3['minimo_area'])
   style_metric_cards(border_color="#3A74E7")
 
   ########### GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
@@ -331,20 +346,24 @@ with tab_2:
   #Ordenar por área y seleccionar los top 10
   top_ten_area_s1 = datos_area_s1[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
   top_ten_area_s2 = datos_area_s2[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
+  top_ten_area_s3 = datos_area_s3[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
 
   st.subheader(f"Top Ten {area_seleccionado}")
 
-  col1, col2= st.columns(2)
+  col1, col2, col3= st.columns(3)
   with col1:
     st.subheader("Primer Simulacro")
     st.dataframe(top_ten_area_s1)
   with col2:
     st.subheader("Segundo Simulacro")
     st.dataframe(top_ten_area_s2)
+  with col3:
+    st.subheader("Tercer Simulacro")
+    st.dataframe(top_ten_area_s3)
 
   #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  st.plotly_chart(px.histogram(datos_area_s1, x=area_seleccionado, text_auto=True))
-  st.plotly_chart(px.box(datos_area_s1, x=area_seleccionado))
+  #st.plotly_chart(px.histogram(datos_area_s1, x=area_seleccionado, text_auto=True))
+  #st.plotly_chart(px.box(datos_area_s1, x=area_seleccionado))
 
   #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -464,32 +483,63 @@ with tab_3:
   # Obtener datos del grupo seleccionado
   datos_grupo = obtener_datos_por_grupo(grupo_seleccionado)
 
-  # Calcular métricas para el grupo seleccionado
-  metricas_grupo_area = calcular_metricas_por_grupo_area(datos_grupo,"Matemáticas")
+  # Obtener datos del área actual
+  datos_garea_s1 = datos_grupo[datos_grupo["SIMULACRO"] == "S1"]
+  datos_garea_s2 = datos_grupo[datos_grupo["SIMULACRO"] == "S2"]
+  datos_garea_s3 = datos_grupo[datos_grupo["SIMULACRO"] == "S3"]
 
   # Definir lista de áreas para las pestañas
   areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
 
-  tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
+  # Crear un selector de grupo con st.selectbox
+  garea_seleccionado = st.selectbox("Seleccione el área:", areas)
 
-  with tab1:
-     st.header("Matemáticas")
-     # Mostrar tarjetas con las métricas
-     col1, col2, col3 = st.columns(3)
-     with col1:
-       promedio = metricas_grupo_area['Promedio'].round(2)
-       st.metric(label="Promedio", value=promedio)
-     with col2:
-       maximo = metricas_grupo_area['maximo_area']
-       st.metric(label="Máximo", value=maximo)
-     with col3:
-       minimo = metricas_grupo_area['minimo_area']
-       st.metric(label="Mínimo", value=minimo)
-     style_metric_cards(border_color="#3A74E7")
+  # Calcular métricas para el grupo seleccionado
+  metricas_grupo_area = calcular_metricas_por_grupo_area(datos_grupo,garea_seleccionado)
+
+  
+
+  #Ordenar por área y seleccionar los top 10
+  top_ten_garea_s1 = datos_garea_s1[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+  top_ten_garea_s2 = datos_garea_s2[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+  top_ten_garea_s3 = datos_garea_s3[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+
+  st.subheader(f"Top Ten {garea_seleccionado}")
+
+  col1, col2, col3= st.columns(3)
+  with col1:
+    st.subheader("Primer Simulacro")
+    st.dataframe(top_ten_garea_s1)
+  with col2:
+    st.subheader("Segundo Simulacro")
+    st.dataframe(top_ten_garea_s2)
+  with col3:
+    st.subheader("Tercer Simulacro")
+    st.dataframe(top_ten_garea_s3)
+
+  #tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
+  
+
+  #with tab1:
+  #   st.header("Matemáticas")
+  #   # Mostrar tarjetas con las métricas
+  #   col1, col2, col3 = st.columns(3)
+  #   with col1:
+  #     promedio = metricas_grupo_area['Promedio'].round(2)
+  #     st.metric(label="Promedio", value=promedio)
+  #   with col2:
+  #     maximo = metricas_grupo_area['maximo_area']
+  #     st.metric(label="Máximo", value=maximo)
+  #   with col3:
+  #     minimo = metricas_grupo_area['minimo_area']
+  #     st.metric(label="Mínimo", value=minimo)
+  #   style_metric_cards(border_color="#3A74E7")
+
+  
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   # Mostrar histogramas y boxplots (opcional)
-  st.plotly_chart(px.histogram(datos_grupo, x="Matemáticas"))
-  st.plotly_chart(px.box(datos_grupo, x="Matemáticas"))
+  #st.plotly_chart(px.histogram(datos_grupo, x="Matemáticas"))
+  #st.plotly_chart(px.box(datos_grupo, x="Matemáticas"))
   #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ##############################################################################################################
@@ -498,5 +548,5 @@ with tab_3:
  
 with tab_4:
 
-  st.header("En construcción...")
+  st.header("...")
   #st.title("Resumen general - Simulacro ICFES")
