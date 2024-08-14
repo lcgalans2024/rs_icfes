@@ -271,6 +271,25 @@ with st.sidebar:
 # Tablero principal
 st.title("TABLERO: **RESULTADOS SIMULACROS ICFES**")
 
+st.subheader("Comparativo puntaje global")
+
+# Agrupar datos por grupo y calcular promedios de puntajes globales
+datos_agrupados = datos.groupby(['DOCUMENTO','SIMULACRO'])['Puntaje global'].mean().round(2).reset_index()
+
+# Crear gráfico de barras
+
+fig = px.bar(datos_agrupados[datos_agrupados["DOCUMENTO"] == clave_docente], y="SIMULACRO", x="Puntaje global", color = 'SIMULACRO', barmode='group', text_auto=True)
+
+# Actualizar el diseño para etiquetas y título
+fig.update_layout(
+      xaxis_title="Puntaje global",
+      yaxis_title="Simulacro",
+      title="Distribución de puntajes globales por simulacro",
+  )
+
+# Mostrar el gráfico
+st.plotly_chart(fig)
+
 if len(clave_docente) > 0:   
     
     st.subheader("Resultados")
