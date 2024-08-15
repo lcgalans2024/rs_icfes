@@ -112,6 +112,9 @@ if len(clave_docente) > 0:
 
     df_usuario = filtrar_datos(clave_docente, datos)
 
+    # Resetear el índice del DataFrame
+    df_usuario.reset_index(drop=True, inplace=True)
+
     st.dataframe(df_usuario[["PROCESO","ACTIVIDAD","Calificación"]])
 
     # Definir los pesos para cada proceso
