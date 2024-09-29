@@ -20,9 +20,10 @@ alt.themes.enable("dark")
 ###########################################################################
 
 @st.cache_data
-def cargar_datos(file_path, nombre_hoja):
+def cargar_datos(file_path, nombre_hoja, numero_periodo):
     df = pd.read_excel(file_path,sheet_name=nombre_hoja)
-    return df#.copy()
+    df = df[df.PERIODO == numero_periodo]
+    return df#.copy()|
 
 @st.cache_data
 def filtrar_datos(usuario, df):
@@ -51,6 +52,9 @@ excel_file = pd.ExcelFile(file_path)
 # Obtener los nombres de las hojas
 sheet_names = excel_file.sheet_names
 
+# Obtener los nombres de las hojas
+periodo_number = [1,2,3]
+
 #datos = cargar_datos(file_path, )
 #
 #datos["Matricula"] = datos["Matricula"].astype(str)
@@ -77,9 +81,12 @@ with st.sidebar:
     # Crear un selector en Streamlit con los nombres de las hojas
     selected_sheet = st.selectbox("Seleccione su grupo", sheet_names)
 
+    # Crear un selector en Streamlit con los periodod
+    selected_periodo = st.selectbox("Seleccione el periodo", periodo_number)
+
     submitted = st.button("Consultar")
 
-    datos = cargar_datos(file_path, selected_sheet)
+    datos = cargar_datos(file_path, selected_sheet, selected_periodo)
 
     datos["Matricula"] = datos["Matricula"].astype(str)
     datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
