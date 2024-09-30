@@ -73,7 +73,7 @@ with st.sidebar:
     grado = ["11", "10"]
 
     # Crear un selector de grupo con st.selectbox
-    grado_seleccionado = st.selectbox("Seleccione el numero de simulacro:", grado)
+    grado_seleccionado = st.selectbox("Seleccione el grado:", grado)
 
     datos = datos[datos['Grupo'].str.startswith(grado_seleccionado)]
 
