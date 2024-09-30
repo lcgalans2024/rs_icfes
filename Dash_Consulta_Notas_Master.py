@@ -82,7 +82,7 @@ with st.sidebar:
     selected_sheet = st.selectbox("Seleccione su grupo", sheet_names)
 
     # Crear un selector en Streamlit con los periodod
-    selected_periodo = st.selectbox("Seleccione el periodo", periodo_number)
+    selected_periodo = st.selectbox("Seleccione el periodo", periodo_number, index= 2)
 
     submitted = st.button("Consultar")
 
