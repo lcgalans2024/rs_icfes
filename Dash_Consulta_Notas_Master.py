@@ -53,7 +53,7 @@ excel_file = pd.ExcelFile(file_path)
 sheet_names = excel_file.sheet_names
 
 # Obtener los nombres de las hojas
-periodo_number = [1,2,3]
+periodo_number = ["",1,2,3]
 
 #datos = cargar_datos(file_path, )
 #
@@ -76,17 +76,17 @@ with st.sidebar:
     #BAENA CHALARCA JERONIMO
     st.header("DATOS DEL USUARIO")
 
-    clave_docente = st.text_input("Documento", type='password')
+    documento_estudiante = st.text_input("Documento", type='password')
 
     # Crear un selector en Streamlit con los nombres de las hojas
-    selected_sheet = st.selectbox("Seleccione su grupo", sheet_names)
+    selected_sheet_grupo = st.selectbox("Seleccione su grupo", sheet_names)
 
     # Crear un selector en Streamlit con los periodod
     selected_periodo = st.selectbox("Seleccione el periodo", periodo_number, index= 2)
 
     submitted = st.button("Consultar")
 
-    datos = cargar_datos(file_path, selected_sheet, selected_periodo)
+    datos = cargar_datos(file_path, selected_sheet_grupo, selected_periodo)
 
     datos["Matricula"] = datos["Matricula"].astype(str)
     datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
@@ -94,14 +94,14 @@ with st.sidebar:
     for col in datos.select_dtypes(include=np.float64):
         datos[col] = datos[col].round(2)
 
-    result_df = filtrar_datos(clave_docente, datos)
+    result_df = filtrar_datos(documento_estudiante, datos)
 
     if not result_df.empty:
          with st.container(border=True):
               est_nombre = result_df['Nombre_estudiante'].iloc[0]
               st.markdown("**ESTUDIANTE:**")
               st.markdown(f"{est_nombre}")
-              st.markdown(f"**GRUPO:** {selected_sheet}")
+              st.markdown(f"**GRUPO:** {selected_sheet_grupo}")
 
 ##############################################################################
 
@@ -110,34 +110,41 @@ st.title("TABLERO: **NOTAS MASTER**")
 
 #st.dataframe(datos.head())
 
-if len(clave_docente) > 0:   
-    
-    st.subheader("PERIODO 2")
+if len(documento_estudiante) > 0:   
+    if documento_estudiante and selected_sheet_grupo and selected_periodo:
 
-    # Definir la columna por la que se desea agrupar
-    columna_grupo = "SIMULACRO"
+        if not result_df.empty:
 
-    df_usuario = filtrar_datos(clave_docente, datos)
+            st.subheader("PERIODO 2")
 
-    # Resetear el índice del DataFrame
-    df_usuario.reset_index(drop=True, inplace=True)
+            # Definir la columna por la que se desea agrupar
+            columna_grupo = "SIMULACRO"
 
-    st.dataframe(df_usuario[["PROCESO","ACTIVIDAD","Calificación"]])
+            df_usuario = filtrar_datos(documento_estudiante, datos)
 
-    # Definir los pesos para cada proceso
-    pesos = {
-        'HACER': 0.3,
-        'SABER': 0.3,
-        'AUTOEVALUACIÓN': 0.2,
-        'PRUEBA_PERIODO': 0.2
-    }
+            # Resetear el índice del DataFrame
+            df_usuario.reset_index(drop=True, inplace=True)
 
-    # Calcular el promedio ponderado
-    promedio_ponderado = 0
+            st.dataframe(df_usuario[["PROCESO","ACTIVIDAD","Calificación"]])
 
-    for proceso, peso in pesos.items():
-        promedio_ponderado += df_usuario[df_usuario['PROCESO'] == proceso]['Calificación'].mean() * peso
+            # Definir los pesos para cada proceso
+            pesos = {
+                'HACER': 0.3,
+                'SABER': 0.3,
+                'AUTOEVALUACIÓN': 0.2,
+                'PRUEBA_PERIODO': 0.2
+            }
 
-    est_nombre = df_usuario['Nombre_estudiante'].iloc[0]
+            # Calcular el promedio ponderado
+            promedio_ponderado = 0
 
-    st.markdown(f"**Definitiva**: {round(promedio_ponderado,1)}")
+            for proceso, peso in pesos.items():
+                promedio_ponderado += df_usuario[df_usuario['PROCESO'] == proceso]['Calificación'].mean() * peso
+
+            est_nombre = df_usuario['Nombre_estudiante'].iloc[0]
+
+            st.markdown(f"**Definitiva**: {round(promedio_ponderado,1)}")
+        else:
+            st.warning("Usuario no registrado")
+    else:
+        st.warning("Por favor, ingrese todos los datos.")
