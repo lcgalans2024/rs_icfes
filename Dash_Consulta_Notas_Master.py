@@ -79,29 +79,32 @@ with st.sidebar:
     documento_estudiante = st.text_input("Documento", type='password')
 
     # Crear un selector en Streamlit con los nombres de las hojas
-    selected_sheet_grupo = st.selectbox("Seleccione su grupo", sheet_names)
+    selected_sheet_grupo = st.selectbox("Seleccione su grupo", [""] + sheet_names, index= 0)
 
     # Crear un selector en Streamlit con los periodod
-    selected_periodo = st.selectbox("Seleccione el periodo", periodo_number, index= 2)
+    selected_periodo = st.selectbox("Seleccione el periodo", periodo_number, index= 0)
 
     submitted = st.button("Consultar")
 
-    datos = cargar_datos(file_path, selected_sheet_grupo, selected_periodo)
+    if selected_sheet_grupo != "":
+        datos = cargar_datos(file_path, selected_sheet_grupo, selected_periodo)
 
-    datos["Matricula"] = datos["Matricula"].astype(str)
-    datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
+        datos["Matricula"] = datos["Matricula"].astype(str)
+        datos["DOCUMENTO"] = datos["DOCUMENTO"].astype(str)
 
-    for col in datos.select_dtypes(include=np.float64):
-        datos[col] = datos[col].round(2)
+        for col in datos.select_dtypes(include=np.float64):
+            datos[col] = datos[col].round(2)
 
-    result_df = filtrar_datos(documento_estudiante, datos)
+        result_df = filtrar_datos(documento_estudiante, datos)
 
-    if not result_df.empty:
-         with st.container(border=True):
-              est_nombre = result_df['Nombre_estudiante'].iloc[0]
-              st.markdown("**ESTUDIANTE:**")
-              st.markdown(f"{est_nombre}")
-              st.markdown(f"**GRUPO:** {selected_sheet_grupo}")
+        if not result_df.empty:
+            with st.container(border=True):
+                est_nombre = result_df['Nombre_estudiante'].iloc[0]
+                st.markdown("**ESTUDIANTE:**")
+                st.markdown(f"{est_nombre}")
+                st.markdown(f"**GRUPO:** {selected_sheet_grupo}")
+    else:
+        st.warning("Ingresar datos del estudiante")
 
 ##############################################################################
 
@@ -115,7 +118,7 @@ if len(documento_estudiante) > 0:
 
         if not result_df.empty:
 
-            st.subheader("PERIODO 2")
+            st.subheader(f"PERIODO {selected_periodo}")
 
             # Definir la columna por la que se desea agrupar
             columna_grupo = "SIMULACRO"
@@ -145,6 +148,6 @@ if len(documento_estudiante) > 0:
 
             st.markdown(f"**Definitiva**: {round(promedio_ponderado,1)}")
         else:
-            st.warning("Usuario no registrado")
+            st.warning("Usuario no registrado, revise los datos seleccionados")
     else:
         st.warning("Por favor, ingrese todos los datos.")
