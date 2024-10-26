@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import altair as alt
 import plotly.express as px
 from statistics import mode,median,mean
@@ -42,6 +43,34 @@ def calcular_resultados(df):
     resultado['NOTA_PROMEDIO_EST'] = resultado['NOTA_PROMEDIO_EST'].round(2)
 
     return resultado
+@st.cache_data
+# Create a horizontal bar plot representing score
+def barra_progreso(M,nota,meta):
+    fig, ax = plt.subplots(figsize=(8, 2))
+    # Create the bar
+    ax.broken_barh([(0, M)], (0.5, 1), facecolors='lightgray')
+    ax.broken_barh([(0, nota)], (0.5, 1), facecolors='lightgreen')
+
+    # Add a vertical line for the score
+    ax.vlines(meta, 0.5, 1.5, colors='black')
+
+    # Colocar el valor de la nota dentro de la barra verde
+    ax.text(nota, 0.95, f'{nota}', ha='right', va='center', fontsize=12, color='black', fontweight='bold')
+
+    # Personalizar el gráfico
+    ax.set_yticks([])
+    ax.set_xticks(range(0, M + 1))
+    ax.set_xlim(0, M)
+    ax.set_ylim(0, 2)
+    ax.set_title('Nota Acumulada')
+
+    # Mostrar los bordes del gráfico
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(True)
+
+    return fig
 
 ############################### Load Data ###############################
 file_path = "Notas_Master.xlsx"
@@ -82,7 +111,7 @@ with st.sidebar:
     selected_sheet_grupo = st.selectbox("Seleccione su grupo", [""] + sheet_names, index= 0)
 
     # Crear un selector en Streamlit con los periodod
-    selected_periodo = st.selectbox("Seleccione el periodo", periodo_number, index= 0)
+    selected_periodo = st.selectbox("Seleccione el periodo académico", periodo_number, index= 0)
 
     submitted = st.button("Consultar")
 
@@ -146,7 +175,13 @@ if len(documento_estudiante) > 0:
 
             est_nombre = df_usuario['Nombre_estudiante'].iloc[0]
 
-            st.markdown(f"**Definitiva**: {round(promedio_ponderado,1)}")
+            nota_acumulada = round(promedio_ponderado,1)
+
+            #st.markdown(f"**Definitiva**: {nota_acumulada}")
+
+            # Generar y mostrar la gráfica
+            fig = barra_progreso(5, nota_acumulada, 3)
+            st.pyplot(fig)
         else:
             st.warning("Usuario no registrado, revise los datos seleccionados")
     else:
