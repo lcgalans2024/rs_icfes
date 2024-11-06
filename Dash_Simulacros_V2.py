@@ -84,6 +84,7 @@ with st.sidebar:
 media_nacional = 257.0
 media_depto = 250.0
 media_munpio = 245.0
+media_colegio = 266.0
 ####################################################################################################################
 st.title("ANÁLISIS RESULTADOS SIMULACROS ICFES")
 
@@ -144,12 +145,13 @@ with tab_1:
 
 ##################################### DATOS SIMULACROS ####################################
   # Inicializar las métricas como None o valores por defecto
-  promedio_general_s1 = promedio_general_s2 = promedio_general_s3 = None
-  maximo_s1 = maximo_s2 = maximo_s3 = None
-  minimo_s1 = minimo_s2 = minimo_s3 = None
+  promedio_general_s1 = promedio_general_s2 = promedio_general_s3 = promedio_general_icfes = None
+  maximo_s1 = maximo_s2 = maximo_s3 = maximo_icfes = None
+  minimo_s1 = minimo_s2 = minimo_s3 = minimo_icfes = None
   S1 = 0
   S2 = 0
   S3 = 0
+  ICFES = 0
   # Comprobar si los simulacros están presentes en los datos
   if "S1" in datos["SIMULACRO"].unique():
       S1 = 1
@@ -171,17 +173,26 @@ with tab_1:
       promedio_general_s3 = round(datos_s3['Puntaje global'].mean(), 2)
       maximo_s3 = max(datos_s3['Puntaje global'])
       minimo_s3 = min(datos_s3['Puntaje global'])
+
+  if "ICFES" in datos["SIMULACRO"].unique():
+      ICFES = 1
+      datos_icfes = datos[datos["SIMULACRO"] == "ICFES"]
+      promedio_general_icfes = round(datos_icfes['Puntaje global'].mean(), 2)
+      maximo_icfes = max(datos_icfes['Puntaje global'])
+      minimo_icfes = min(datos_icfes['Puntaje global'])
   
   # Mostrar tarjetas con las métricas
   col1, col2, col3 = st.columns(3)
   
   with col1:
       if promedio_general_s1 is not None:
-          st.metric(label="Promedio puntaje global simulacro 1", value=promedio_general_s1, delta=round(promedio_general_s1 - media_nacional, 1))
+          st.metric(label="Promedio puntaje global simulacro 1", value=promedio_general_s1, delta=round(promedio_general_s1 - media_colegio, 1))
       if promedio_general_s2 is not None:
-          st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2, delta=round(promedio_general_s2 - media_nacional, 1))
+          st.metric(label="Promedio puntaje global simulacro 2", value=promedio_general_s2, delta=round(promedio_general_s2 - media_colegio, 1))
       if promedio_general_s3 is not None:
-          st.metric(label="Promedio puntaje global simulacro 3", value=promedio_general_s3, delta=round(promedio_general_s3 - media_nacional, 1))
+          st.metric(label="Promedio puntaje global simulacro 3", value=promedio_general_s3, delta=round(promedio_general_s3 - media_colegio, 1))
+      if promedio_general_icfes is not None:
+          st.metric(label="Promedio puntaje global ICFES", value=promedio_general_icfes, delta=round(promedio_general_icfes - media_colegio, 1))
   
   with col2:
       if maximo_s1 is not None:
@@ -190,6 +201,8 @@ with tab_1:
           st.metric(label="Máximo puntaje global simulacro 2", value=maximo_s2)
       if maximo_s3 is not None:
           st.metric(label="Máximo puntaje global simulacro 3", value=maximo_s3)
+      if maximo_icfes is not None:
+          st.metric(label="Máximo puntaje global ICFES", value=maximo_icfes)
   
   with col3:
       if minimo_s1 is not None:
@@ -198,6 +211,8 @@ with tab_1:
           st.metric(label="Mínimo puntaje global simulacro 2", value=minimo_s2)
       if minimo_s3 is not None:
           st.metric(label="Mínimo puntaje global simulacro 3", value=minimo_s3)
+      if minimo_icfes is not None:
+          st.metric(label="Mínimo puntaje global ICFES", value=minimo_icfes)
   style_metric_cards(border_color="#3A74E7")
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -233,6 +248,9 @@ with tab_1:
   if S3 == 1:
      top_ten_s3 = datos_s3[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
 
+  if ICFES == 1:
+     top_ten_icfes = datos_icfes[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+
   st.subheader("Top Ten Puntajes Globales")
 
   col1, col2, col3= st.columns(3)
@@ -240,6 +258,9 @@ with tab_1:
     if S1 == 1:
        st.subheader("Primer Simulacro")
        st.dataframe(top_ten_s1)
+    if ICFES == 1:
+       st.subheader("ICFES 2024")
+       st.dataframe(top_ten_icfes)
   with col2:
     if S2 == 1:
        st.subheader("Segundo Simulacro")
@@ -343,6 +364,8 @@ with tab_2:
      datos_area_s2 = obtener_datos_por_area_simulacro(area_seleccionado,"S2")
   if S3 == 1:
      datos_area_s3 = obtener_datos_por_area_simulacro(area_seleccionado,"S3")
+  if ICFES == 1:
+     datos_area_icfes = obtener_datos_por_area_simulacro(area_seleccionado,"ICFES")
 
   # Calcular métricas para el área actual
   if S1 == 1:
@@ -351,6 +374,8 @@ with tab_2:
      metricas_area_s2 = calcular_metricas_por_area(datos_area_s2,area_seleccionado)
   if S3 == 1:
      metricas_area_s3 = calcular_metricas_por_area(datos_area_s3,area_seleccionado)
+  if ICFES == 1:
+     metricas_area_icfes = calcular_metricas_por_area(datos_area_icfes,area_seleccionado)
   # Generar tabla HTML con las métricas
   #tabla_metricas_html = generar_tabla_metricas(metricas_area)
 
@@ -363,6 +388,8 @@ with tab_2:
       st.metric(label="Promedio global simulacro 2", value=metricas_area_s2['Promedio'].round(2))
    if S3 == 1:
       st.metric(label="Promedio global simulacro 3", value=metricas_area_s3['Promedio'].round(2))
+   if ICFES == 1:
+      st.metric(label="Promedio global ICFES", value=metricas_area_icfes['Promedio'].round(2))
   with col2:
    if S1 == 1:
       st.metric(label="Máximo simulacro 1", value=metricas_area_s1['maximo_area'])
@@ -370,6 +397,8 @@ with tab_2:
       st.metric(label="Máximo simulacro 2", value=metricas_area_s2['maximo_area'])
    if S3 == 1:
       st.metric(label="Máximo simulacro 3", value=metricas_area_s3['maximo_area'])
+   if ICFES == 1:
+      st.metric(label="Máximo ICFES", value=metricas_area_icfes['maximo_area'])
   with col3:
    if S1 == 1:
       st.metric(label="Mínimo simulacro 1", value= metricas_area_s1['minimo_area'])
@@ -377,6 +406,8 @@ with tab_2:
       st.metric(label="Mínimo simulacro 2", value= metricas_area_s2['minimo_area'])
    if S3 == 1:
       st.metric(label="Mínimo simulacro 3", value= metricas_area_s3['minimo_area'])
+   if ICFES == 1:
+      st.metric(label="Mínimo ICFES", value= metricas_area_icfes['minimo_area'])
   style_metric_cards(border_color="#3A74E7")
 
   ########### GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
@@ -405,6 +436,8 @@ with tab_2:
      top_ten_area_s2 = datos_area_s2[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
   if S3 == 1:
      top_ten_area_s3 = datos_area_s3[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
+  if ICFES == 1:
+     top_ten_area_icfes = datos_area_icfes[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
 
   st.subheader(f"Top Ten {area_seleccionado}")
 
@@ -413,6 +446,10 @@ with tab_2:
     if S1 == 1:
        st.subheader("Primer Simulacro")
        st.dataframe(top_ten_area_s1)
+
+    if ICFES == 1:
+       st.subheader("Primer Simulacro")
+       st.dataframe(top_ten_area_icfes)
   with col2:
     if S2 == 1:
        st.subheader("Segundo Simulacro")
@@ -551,6 +588,8 @@ with tab_3:
      datos_garea_s2 = datos_grupo[datos_grupo["SIMULACRO"] == "S2"]
   if S3 == 1:
      datos_garea_s3 = datos_grupo[datos_grupo["SIMULACRO"] == "S3"]
+  if ICFES == 1:
+     datos_garea_icfes = datos_grupo[datos_grupo["SIMULACRO"] == "ICFES"]
 
   # Definir lista de áreas para las pestañas
   areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
@@ -570,6 +609,8 @@ with tab_3:
      top_ten_garea_s2 = datos_garea_s2[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
   if S3 == 1:
      top_ten_garea_s3 = datos_garea_s3[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+  if ICFES == 1:
+     top_ten_garea_icfes = datos_garea_icfes[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
 
   st.subheader(f"Top Ten {garea_seleccionado}")
 
@@ -578,6 +619,10 @@ with tab_3:
     if S1 == 1:
        st.subheader("Primer Simulacro")
        st.dataframe(top_ten_garea_s1)
+
+    if ICFES == 1:
+       st.subheader("Primer Simulacro")
+       st.dataframe(top_ten_garea_icfes)
   with col2:
     if S2 == 1:
        st.subheader("Segundo Simulacro")
