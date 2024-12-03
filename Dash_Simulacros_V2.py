@@ -448,7 +448,7 @@ with tab_2:
        st.dataframe(top_ten_area_s1)
 
     if ICFES == 1:
-       st.subheader("Primer Simulacro")
+       st.subheader("ICFES 2024")
        st.dataframe(top_ten_area_icfes)
   with col2:
     if S2 == 1:
@@ -621,7 +621,7 @@ with tab_3:
        st.dataframe(top_ten_garea_s1)
 
     if ICFES == 1:
-       st.subheader("Primer Simulacro")
+       st.subheader("ICFES 2024")
        st.dataframe(top_ten_garea_icfes)
   with col2:
     if S2 == 1:
