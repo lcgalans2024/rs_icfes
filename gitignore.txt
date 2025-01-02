@@ -1,0 +1,3 @@
+Venv_Scraping/
+venv_scraping_streamlit/
+venv
