@@ -772,12 +772,12 @@ with tab_4:
   st.plotly_chart(fig)
 
 ########################################################################################################################
-# Mostrar gráfico de barras de distribución de puntajes por grupo
+# Mostrar gráfico de barras de distribución de puntajes por area y año
 
 datos_historicos = pd.read_excel("Resultados_historico_2016_2024.xlsx")
 
-# Obtener grupos únicos de la columna elegida
-año = [2016,2017,2018,2019,2020,2021,2022,2023,2024]#datos_historicos.Año.unique()
+# Obtener años únicos de la columna elegida
+año = datos_historicos.Año.dt.year.unique()
 
 # Obtener grupos únicos de la columna elegida
 area = datos_historicos.Area.unique()
