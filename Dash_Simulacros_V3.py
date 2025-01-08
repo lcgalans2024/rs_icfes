@@ -811,3 +811,31 @@ fig.update_layout(
 # Mostrar el gráfico
 st.plotly_chart(fig)
 
+########################################################################################################################
+
+# Insertar GIF desde un archivo local o URL
+#gif_url = "Resultados_ICFES2016_2024.gif"
+#st.image(gif_url, caption="¡Bienvenidos al tablero!", use_container_width=True)
+#st.markdown(
+#    f'<div style="text-align: center;"><img src="{gif_url}" width="500"></div>',
+#    unsafe_allow_html=True
+#)
+
+#gif_path = "Resultados_ICFES2016_2024.gif"
+#file_ = open(gif_path, "rb")
+#contents = file_.read()
+#data_url = f"data:image/gif;base64,{contents.decode('latin1')}"
+#st.markdown(f'<img src="{data_url}" width="100">', unsafe_allow_html=True)
+
+from PIL import Image
+
+# Cargar el archivo subido
+uploaded_file = "Resultados_ICFES2016_2024.png"
+
+if uploaded_file is not None:
+    gif_url = uploaded_file
+    st.markdown(
+        f'<div style="text-align: center;"><img src="{gif_url}" width="500"></div>',
+        unsafe_allow_html=True
+    )
+
