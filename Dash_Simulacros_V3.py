@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import altair as alt
 import plotly.express as px
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 from statistics import mode,median,mean
 from streamlit_extras.metric_cards import style_metric_cards
 
@@ -68,6 +70,12 @@ def make_donut(input_response, input_text, input_color):
                       legend=None),
   ).properties(width=130, height=130)
   return plot_bg + plot + text
+
+def BARRA_LATERAL():
+    """
+    ...
+    """
+
 ########################################## Barra lateral #####################################
 with st.sidebar:
     #BAENA CHALARCA JERONIMO
@@ -111,11 +119,11 @@ media_depto = 250.0
 media_munpio = 245.0
 media_colegio = 266.0
 ####################################################################################################################
-st.title("ANÁLISIS RESULTADOS SIMULACROS E ICFES")
+st.title("ANÁLISIS RESULTADOS INSTITUCIONALES")
 
-tableros = ["Análisis Puntaje Global", "Análisis Por Area", "Análisis Por Grupo", "Análisis Por Año"]
+tableros = ["Análisis Puntaje Global", "Análisis Por Area", "Análisis Por Grupo", "Análisis Por Año", "Olimpiadas Institucionales"]
 
-tab_1, tab_2, tab_3, tab_4 = st.tabs(tableros)
+tab_1, tab_2, tab_3, tab_4, tab_5= st.tabs(tableros)
 
 ##############################################################################################################
 ########################################## ANÁLISIS PUNTAJE GLOBAL ###########################################
@@ -716,7 +724,7 @@ def ANÁLISIS_POR_AÑO():
  
 with tab_4:
 
-  st.header("...")
+  #st.header("...")
   #st.title("Resumen general - Simulacro ICFES")
 
   # Hacemos una copia para convertir la columna AÑO a string y esta sea tratada como una variable ordinal
@@ -771,71 +779,184 @@ with tab_4:
 
   st.plotly_chart(fig)
 
-########################################################################################################################
-# Mostrar gráfico de barras de distribución de puntajes por area y año
+  ########################################################################################################################
+  # Mostrar gráfico de barras de distribución de puntajes por area y año
 
-datos_historicos = pd.read_excel("Resultados_historico_2016_2024.xlsx")
+  datos_historicos = pd.read_excel("Resultados_historico_2016_2024.xlsx")
 
-# Obtener años únicos de la columna elegida
-año = datos_historicos.Año.dt.year.unique()
+  # Obtener años únicos de la columna elegida
+  año = datos_historicos.Año.dt.year.unique()
 
-# Obtener grupos únicos de la columna elegida
-area = datos_historicos.Area.unique()
+  # Obtener grupos únicos de la columna elegida
+  area = datos_historicos.Area.unique()
 
-# Crear un selector de grupo con st.selectbox
-Año_seleccionado = st.selectbox("Seleccione un año:", año)
+  # Crear un selector de grupo con st.selectbox
+  Año_seleccionado = st.selectbox("Seleccione un año:", año)
 
-# Crear un selector de grupo con st.selectbox
-Area_seleccionado = st.selectbox("Seleccione un area:", area)
+  # Crear un selector de grupo con st.selectbox
+  Area_seleccionado = st.selectbox("Seleccione un area:", area)
 
-datos_historicos = datos_historicos[(datos_historicos.Sector == 'OFICIAL') & (datos_historicos.Area == Area_seleccionado) & (datos_historicos.Año.dt.year == int(Año_seleccionado))].copy()
+  datos_historicos = datos_historicos[(datos_historicos.Sector == 'OFICIAL') & (datos_historicos.Area == Area_seleccionado) & (datos_historicos.Año.dt.year == int(Año_seleccionado))].copy()
 
 
-# Agrupar datos por grupo y calcular promedios de puntajes globales
-datos_agrupados = datos_historicos.groupby(['Año','Colegio'])['Promedio'].mean().round(2).reset_index()
+  # Agrupar datos por grupo y calcular promedios de puntajes globales
+  datos_agrupados = datos_historicos.groupby(['Año','Colegio'])['Promedio'].mean().round(2).reset_index()
 
-# Ordenar por valores
-datos_agrupados = datos_agrupados.sort_values(by="Promedio", ascending=True)
+  # Ordenar por valores
+  datos_agrupados = datos_agrupados.sort_values(by="Promedio", ascending=True)
 
-# Crear gráfico de barras
+  # Crear gráfico de barras
 
-fig = px.bar(datos_agrupados, x="Promedio", y="Colegio", barmode='group', text_auto=True)
+  fig = px.bar(datos_agrupados, x="Promedio", y="Colegio", barmode='group', text_auto=True)
 
-# Actualizar el diseño para etiquetas y título
-fig.update_layout(
-      xaxis_title="Grupo",
-      yaxis_title="Puntaje global",
-      title="Distribución de puntajes globales por grupo",
-  )
-
-# Mostrar el gráfico
-st.plotly_chart(fig)
-
-########################################################################################################################
-
-# Insertar GIF desde un archivo local o URL
-#gif_url = "Resultados_ICFES2016_2024.gif"
-#st.image(gif_url, caption="¡Bienvenidos al tablero!", use_container_width=True)
-#st.markdown(
-#    f'<div style="text-align: center;"><img src="{gif_url}" width="500"></div>',
-#    unsafe_allow_html=True
-#)
-
-#gif_path = "Resultados_ICFES2016_2024.gif"
-#file_ = open(gif_path, "rb")
-#contents = file_.read()
-#data_url = f"data:image/gif;base64,{contents.decode('latin1')}"
-#st.markdown(f'<img src="{data_url}" width="100">', unsafe_allow_html=True)
-
-from PIL import Image
-
-# Cargar el archivo subido
-uploaded_file = "Resultados_ICFES2016_2024.png"
-
-if uploaded_file is not None:
-    gif_url = uploaded_file
-    st.markdown(
-        f'<div style="text-align: center;"><img src="{gif_url}" width="500"></div>',
-        unsafe_allow_html=True
+  # Actualizar el diseño para etiquetas y título
+  fig.update_layout(
+        xaxis_title="Grupo",
+        yaxis_title="Puntaje global",
+        title="Distribución de puntajes globales por grupo",
     )
 
+  # Mostrar el gráfico
+  st.plotly_chart(fig)
+
+  ########################################################################################################################
+
+  # Insertar GIF desde un archivo local o URL
+  #gif_url = "Resultados_ICFES2016_2024.gif"
+  #st.image(gif_url, caption="¡Bienvenidos al tablero!", use_container_width=True)
+  #st.markdown(
+  #    f'<div style="text-align: center;"><img src="{gif_url}" width="500"></div>',
+  #    unsafe_allow_html=True
+  #)
+
+  #gif_path = "Resultados_ICFES2016_2024.gif"
+  #file_ = open(gif_path, "rb")
+  #contents = file_.read()
+  #data_url = f"data:image/gif;base64,{contents.decode('latin1')}"
+  #st.markdown(f'<img src="{data_url}" width="100">', unsafe_allow_html=True)
+
+  from PIL import Image
+
+  # Cargar el archivo subido
+  uploaded_file = "Resultados_ICFES2016_2024.png"
+
+  if uploaded_file is not None:
+      gif_url = uploaded_file
+      st.markdown(
+          f'<div style="text-align: center;"><img src="{gif_url}" width="500"></div>',
+          unsafe_allow_html=True
+      )
+
+
+##############################################################################################################
+############################################## ANÁLISIS OLIMPIADAS ##############################################
+##############################################################################################################
+
+def ANÁLISIS_OLIMPIADAS():
+    """
+    ...
+    """
+ 
+with tab_5:
+
+  st.header("Olimpiadas Institucionales")
+
+  # Cargar los datos de las olimpiadas
+  df_claves = pd.read_excel('Olimpiadas_Institucionales.xlsx', sheet_name='Claves')
+  df_olimpiadas = pd.read_excel("Olimpiadas_Institucionales.xlsx", sheet_name='Full')
+
+  df_olimpiadas['QuizClass'].replace({'IEOS_601':'G_601', 'IEOS_602':'G_602', 'IEOS_603':'G_603', 'IEOS_604':'G_604'
+                                      ,'IEOS_7':'G_701', 'IEOS_702':'G_702', 'IEOS_703':'G_703', 'IEOS_704':'G_704'
+                                      ,'IEOS_801':'G_801'}, inplace=True)
+
+  #st.dataframe(df_claves.head())
+
+  # Obtener años únicos de la columna elegida
+  #año = datos_olimpiadas.Año.unique()
+
+  # Crear un diccionario de mapeo para renombrar las columnas
+  column_mapping1 = {f'Stu{i}': f'p{i}' for i in range(1, 17)}
+  column_mapping2 = {f'Mark{i}': f'CORRECTASp{i}' for i in range(1, 17)}
+
+  # Renombrar las columnas en el DataFrame
+  df_olimpiadas.rename(columns=column_mapping1, inplace=True)
+  df_olimpiadas.rename(columns=column_mapping2, inplace=True)
+
+  # Derretir el DataFrame por las columnas P1, P2, P3, P4 y P5
+  id_vars = ['QuizClass', 'FirstName', 'LastName', 'StudentID',
+             'CustomID', 'Earned Points', 'Possible Points', 'PercentCorrect']
+  value_vars = column_mapping1.values()
+
+  df_melted = pd.melt(df_olimpiadas, id_vars=id_vars, value_vars=value_vars, var_name='PREGUNTA', value_name='OPCION_MARCADA')
+  df_melted['OPCION_MARCADA'] = df_melted['OPCION_MARCADA'].fillna('NM')
+
+  # Merge df_melted with df_claves on PREGUNTA
+  df_merged = pd.merge(df_melted, df_claves, on='PREGUNTA', how='left')
+
+  # Create the CORRECTAS column
+  df_merged['CORRECTAS'] = np.where(df_merged['OPCION_MARCADA'] == df_merged['CORRECTA'], 'C', 'X')
+  df_merged['ACIERTOS'] = np.where(df_merged['CORRECTAS'] == 'C', 1, 0)
+
+  # Drop the CORRECTA column as it's no longer needed
+  df_merged.drop(columns=['CORRECTA'], inplace=True)
+
+  # Convertir la columna PREGUNTA en una categoría con el orden deseado
+  df_merged['PREGUNTA'] = pd.Categorical(df_merged['PREGUNTA'], categories=[f'p{i}' for i in range(1, 17)], ordered=True)
+
+  # Ordenar el DataFrame
+  df_merged = df_merged.sort_values(by=['QuizClass', 'LastName', 'PREGUNTA'])
+
+  # Eliminar las filas de las preguntas p1, p4, p7 y p14
+  df_12p = df_merged[~df_merged['PREGUNTA'].isin(['p1', 'p4', 'p7', 'p14'])]
+
+  # Calcular el promedio de aciertos por grupo
+  df_grupo = df_12p.groupby(['QuizClass']).agg(promedio=('PercentCorrect', 'mean')).reset_index()
+
+  # Crear el gráfico de barras
+
+  fig = px.bar(df_grupo, x="QuizClass", y="promedio", barmode='group', text_auto=True)
+
+  # Actualizar el diseño para etiquetas y título
+  fig.update_layout(
+        xaxis_title="Grupo",
+        yaxis_title="% Correctas",
+        title="Distribución de Promedio de % correcto por grupo",
+    )
+  
+  # Mostrar el gráfico
+  st.plotly_chart(fig)
+
+  df_grupo_categoria = df_12p.groupby(['QuizClass','CATEGORIA']).agg(
+     count=('PREGUNTA', 'size')
+     ,aciertos=('ACIERTOS', 'sum')
+     ,proporcion_aciertos=('ACIERTOS', 'mean')
+     ).reset_index()
+
+  # Crear el gráfico de barras apilado
+  categories = df_grupo_categoria['CATEGORIA'].unique()
+  bottom = np.zeros(len(df_grupo_categoria['QuizClass'].unique()))
+
+  # Redondear los valores de proporcion_aciertos a 2 decimales
+  df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria['proporcion_aciertos'].round(2)
+
+  # Crear el gráfico de barras apilado
+  fig = px.bar(
+      df_grupo_categoria,
+      x='QuizClass',
+      y='proporcion_aciertos',
+      color='CATEGORIA',
+      text='proporcion_aciertos',
+      barmode='relative',
+      title="Distribución de % correcto por grupo y categoría"
+  )
+
+  # Actualizar el diseño para etiquetas y título
+  fig.update_layout(
+      xaxis_title="Grupo",
+      yaxis_title="% Correctas"
+  )
+
+  # Mostrar el gráfico
+  st.plotly_chart(fig)
+
+  
