@@ -937,9 +937,30 @@ with tab_5:
   bottom = np.zeros(len(df_grupo_categoria['QuizClass'].unique()))
 
   # Redondear los valores de proporcion_aciertos a 2 decimales
-  df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria['proporcion_aciertos'].round(2)
+  #f_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria['proporcion_aciertos'].round(2)
 
   # Crear el gráfico de barras apilado
+  #ig = px.bar(
+  #   df_grupo_categoria,
+  #   x='QuizClass',
+  #   y='proporcion_aciertos',
+  #   color='CATEGORIA',
+  #   text='proporcion_aciertos',
+  #   barmode='relative',
+  #   title="Distribución de % correcto por grupo y categoría"
+  #
+
+  # Actualizar el diseño para etiquetas y título
+  #ig.update_layout(
+  #   xaxis_title="Grupo",
+  #   yaxis_title="% Correctas"
+  #
+
+  # Normalizar los valores para que sumen 100% por cada grupo
+  df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria.groupby('QuizClass')['proporcion_aciertos'].transform(lambda x: x / x.sum() * 100)
+  # Redondear los valores de proporcion_aciertos a 2 decimales
+  df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria['proporcion_aciertos'].round(2)
+  # Crear el gráfico de barras 100% apilado
   fig = px.bar(
       df_grupo_categoria,
       x='QuizClass',
@@ -947,7 +968,7 @@ with tab_5:
       color='CATEGORIA',
       text='proporcion_aciertos',
       barmode='relative',
-      title="Distribución de % correcto por grupo y categoría"
+      title="Distribución de % correcto por grupo y categoría (100% apilado)"
   )
 
   # Actualizar el diseño para etiquetas y título
@@ -958,5 +979,7 @@ with tab_5:
 
   # Mostrar el gráfico
   st.plotly_chart(fig)
+
+
 
   
