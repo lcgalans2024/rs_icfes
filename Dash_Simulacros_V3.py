@@ -15,8 +15,8 @@ st.set_page_config(layout = "wide")
 
 ##############################################################################################################
 #Cargamos los datos
-#datos = pd.read_excel("Resultados_Simulacro_ICFES.xlsx")
-datos = pd.read_excel("Resultados_Simulacro_ICFES_Sinteticos.xlsx")
+datos = pd.read_excel("Resultados_Simulacro_ICFES.xlsx")
+#datos = pd.read_excel("Resultados_Simulacro_ICFES_Sinteticos.xlsx")
 
 for col in datos.select_dtypes(include=np.float64):
     datos[col] = datos[col].round(2)
@@ -912,6 +912,8 @@ with tab_5:
   # Calcular el promedio de aciertos por grupo
   df_grupo = df_12p.groupby(['QuizClass']).agg(promedio=('PercentCorrect', 'mean')).reset_index()
 
+  df_grupo['promedio'] = df_grupo['promedio'].round(2)
+
   # Crear el gráfico de barras
 
   fig = px.bar(df_grupo, x="QuizClass", y="promedio", barmode='group', text_auto=True)
@@ -968,7 +970,7 @@ with tab_5:
       color='CATEGORIA',
       text='proporcion_aciertos',
       barmode='relative',
-      title="Distribución de % correcto por grupo y categoría (100% apilado)"
+      title="Distribución de % correcto por grupo y categoría" #(100% apilado)
   )
 
   # Actualizar el diseño para etiquetas y título
