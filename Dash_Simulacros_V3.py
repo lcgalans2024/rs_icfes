@@ -881,10 +881,15 @@ with tab_5:
   # Renombrar las columnas en el DataFrame
   df_olimpiadas.rename(columns=column_mapping1, inplace=True)
   df_olimpiadas.rename(columns=column_mapping2, inplace=True)
+  df_olimpiadas.rename(columns={"QuizName": "GRADO", "QuizClass": "GRUPO", "CustomID":"MATRICULA"}, inplace=True)
+
+  # Creamos la columna de grado
+  df_olimpiadas['GRADO'] = np.where(df_olimpiadas['GRUPO'].isin(["G_601","G_602","G_603","G_604"]), 'SEXTO',
+                       np.where(df_olimpiadas['GRUPO'].isin(["G_701","G_702","G_703","G_704"]), 'SEPTIMO','OCTAVO'))
 
   # Derretir el DataFrame por las columnas P1, P2, P3, P4 y P5
-  id_vars = ['QuizClass', 'FirstName', 'LastName', 'StudentID',
-             'CustomID', 'Earned Points', 'Possible Points', 'PercentCorrect']
+  id_vars = ['GRADO', 'GRUPO', 'FirstName', 'LastName', 'StudentID',
+           'MATRICULA', 'Earned Points', 'Possible Points', 'PercentCorrect']
   value_vars = column_mapping1.values()
 
   df_melted = pd.melt(df_olimpiadas, id_vars=id_vars, value_vars=value_vars, var_name='PREGUNTA', value_name='OPCION_MARCADA')
@@ -904,39 +909,65 @@ with tab_5:
   df_merged['PREGUNTA'] = pd.Categorical(df_merged['PREGUNTA'], categories=[f'p{i}' for i in range(1, 17)], ordered=True)
 
   # Ordenar el DataFrame
-  df_merged = df_merged.sort_values(by=['QuizClass', 'LastName', 'PREGUNTA'])
+  df_merged = df_merged.sort_values(by=['GRUPO', 'LastName', 'PREGUNTA'])
 
   # Eliminar las filas de las preguntas p1, p4, p7 y p14
   df_12p = df_merged[~df_merged['PREGUNTA'].isin(['p1', 'p4', 'p7', 'p14'])]
 
-  # Calcular el promedio de aciertos por grupo
-  df_grupo = df_12p.groupby(['QuizClass']).agg(promedio=('PercentCorrect', 'mean')).reset_index()
+  ############################## Crear el gráfico de barras por grupo ##############################
 
-  df_grupo['promedio'] = df_grupo['promedio'].round(2)
+  df_GRADO = df_12p.groupby(['GRADO']).agg(
+    count=('PREGUNTA', 'size'),
+    aciertos=('ACIERTOS', 'sum'),
+    proporcion_aciertos=('ACIERTOS', 'mean')
+    ,percent_correct=('PercentCorrect', 'mean')
 
-  # Crear el gráfico de barras
+  ).reset_index()
 
-  fig = px.bar(df_grupo, x="QuizClass", y="promedio", barmode='group', text_auto=True)
+  df_GRADO['proporcion_aciertos'] = df_GRADO['proporcion_aciertos'].round(2)
+
+  #st.dataframe(df_GRADO.head())
+
+  fig = px.bar(df_GRADO, x="GRADO", y="proporcion_aciertos", barmode='group', text_auto=True)
 
   # Actualizar el diseño para etiquetas y título
   fig.update_layout(
-        xaxis_title="Grupo",
+        xaxis_title="Grado",
         yaxis_title="% Correctas",
-        title="Distribución de Promedio de % correcto por grupo",
+        title="Distribución de % correcto por grado",
     )
   
   # Mostrar el gráfico
   st.plotly_chart(fig)
 
-  df_grupo_categoria = df_12p.groupby(['QuizClass','CATEGORIA']).agg(
+  ############################## Crear el gráfico de barras por grupo ##############################
+
+  # Calcular el promedio de aciertos por grupo
+  df_grupo = df_12p.groupby(['GRUPO']).agg(promedio=('PercentCorrect', 'mean')).reset_index()
+
+  df_grupo['promedio'] = df_grupo['promedio'].round(2)
+
+  fig = px.bar(df_grupo, x="GRUPO", y="promedio", barmode='group', text_auto=True)
+
+  # Actualizar el diseño para etiquetas y título
+  fig.update_layout(
+        xaxis_title="Grupo",
+        yaxis_title="% Correctas",
+        title="Distribución Promedio de % correcto por grupo",
+    )
+  
+  # Mostrar el gráfico
+  st.plotly_chart(fig)
+
+  ############################## Crear el gráfico de barras apilado por grupo ##############################
+  df_grupo_categoria = df_12p.groupby(['GRUPO','CATEGORIA']).agg(
      count=('PREGUNTA', 'size')
      ,aciertos=('ACIERTOS', 'sum')
      ,proporcion_aciertos=('ACIERTOS', 'mean')
      ).reset_index()
 
-  # Crear el gráfico de barras apilado
   categories = df_grupo_categoria['CATEGORIA'].unique()
-  bottom = np.zeros(len(df_grupo_categoria['QuizClass'].unique()))
+  bottom = np.zeros(len(df_grupo_categoria['GRUPO'].unique()))
 
   # Redondear los valores de proporcion_aciertos a 2 decimales
   #f_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria['proporcion_aciertos'].round(2)
@@ -944,7 +975,7 @@ with tab_5:
   # Crear el gráfico de barras apilado
   #ig = px.bar(
   #   df_grupo_categoria,
-  #   x='QuizClass',
+  #   x='GRUPO',
   #   y='proporcion_aciertos',
   #   color='CATEGORIA',
   #   text='proporcion_aciertos',
@@ -959,13 +990,13 @@ with tab_5:
   #
 
   # Normalizar los valores para que sumen 100% por cada grupo
-  df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria.groupby('QuizClass')['proporcion_aciertos'].transform(lambda x: x / x.sum() * 100)
+  df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria.groupby('GRUPO')['proporcion_aciertos'].transform(lambda x: x / x.sum() * 100)
   # Redondear los valores de proporcion_aciertos a 2 decimales
   df_grupo_categoria['proporcion_aciertos'] = df_grupo_categoria['proporcion_aciertos'].round(2)
   # Crear el gráfico de barras 100% apilado
   fig = px.bar(
       df_grupo_categoria,
-      x='QuizClass',
+      x='GRUPO',
       y='proporcion_aciertos',
       color='CATEGORIA',
       text='proporcion_aciertos',
