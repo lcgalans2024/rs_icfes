@@ -5,6 +5,7 @@ import altair as alt
 import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import io
 from statistics import mode,median,mean
 from streamlit_extras.metric_cards import style_metric_cards
 
@@ -121,9 +122,11 @@ media_colegio = 266.0
 ####################################################################################################################
 st.title("ANÁLISIS RESULTADOS INSTITUCIONALES")
 
-tableros = ["Análisis Puntaje Global", "Análisis Por Area", "Análisis Por Grupo", "Análisis Por Año", "Olimpiadas Institucionales"]
+tableros = ["Análisis Puntaje Global", "Análisis Por Area", "Análisis Por Grupo", "Análisis Por Año"
+            ,"Olimpiadas Institucionales","Olimpiadas Por Grado"
+            ]
 
-tab_1, tab_2, tab_3, tab_4, tab_5= st.tabs(tableros)
+tab_1, tab_2, tab_3, tab_4, tab_5, tab_6 = st.tabs(tableros)
 
 ##############################################################################################################
 ########################################## ANÁLISIS PUNTAJE GLOBAL ###########################################
@@ -867,7 +870,7 @@ with tab_5:
 
   df_olimpiadas['QuizClass'].replace({'IEOS_601':'G_601', 'IEOS_602':'G_602', 'IEOS_603':'G_603', 'IEOS_604':'G_604'
                                       ,'IEOS_7':'G_701', 'IEOS_702':'G_702', 'IEOS_703':'G_703', 'IEOS_704':'G_704'
-                                      ,'IEOS_801':'G_801'}, inplace=True)
+                                      ,'IEOS_801':'G_801','IEOS_802':'G_802','IEOS_803':'G_803','IEOS_804':'G_804'}, inplace=True)
 
   #st.dataframe(df_claves.head())
 
@@ -1012,6 +1015,92 @@ with tab_5:
 
   # Mostrar el gráfico
   st.plotly_chart(fig)
+
+
+
+##############################################################################################################
+############################################## ANÁLISIS POR GRADO ##############################################
+##################################################################################################################
+
+def ANÁLISIS_POR_GRADO():
+    """
+    ...
+    """
+
+with tab_6:
+
+  st.header("Análisis por Grupo")
+
+  # Cargar los datos de las olimpiadas
+  df_claves = pd.read_excel('Olimpiadas_Institucionales.xlsx', sheet_name='Claves')
+  df_olimpiadas = pd.read_excel("Olimpiadas_Institucionales.xlsx", sheet_name='Full')
+
+  df_olimpiadas['QuizClass'].replace({'IEOS_601':'G_601', 'IEOS_602':'G_602', 'IEOS_603':'G_603', 'IEOS_604':'G_604'
+                                      ,'IEOS_7':'G_701', 'IEOS_702':'G_702', 'IEOS_703':'G_703', 'IEOS_704':'G_704'
+                                      ,'IEOS_801':'G_801','IEOS_802':'G_802','IEOS_803':'G_803','IEOS_804':'G_804'}, inplace=True)
+
+
+  # Crear un diccionario de mapeo para renombrar las columnas
+  column_mapping1 = {f'Stu{i}': f'p{i}' for i in range(1, 17)}
+  column_mapping2 = {f'Mark{i}': f'CORRECTASp{i}' for i in range(1, 17)}
+  column_mapping3 = {f'Points{i}': f'Pts_p{i}' for i in range(1, 17)}
+
+  # Renombrar las columnas en el DataFrame
+  df_olimpiadas.rename(columns=column_mapping1, inplace=True)
+  df_olimpiadas.rename(columns=column_mapping2, inplace=True)
+  df_olimpiadas.rename(columns=column_mapping3, inplace=True)
+  df_olimpiadas.rename(columns={"QuizName": "GRADO", "QuizClass": "GRUPO", "CustomID":"MATRICULA", "Earned Points":"PUNTAJE", "PercentCorrect":"%_CORRECTO"}, inplace=True)
+
+  # Creamos la columna de grado
+  df_olimpiadas['GRADO'] = np.where(df_olimpiadas['GRUPO'].isin(["G_601","G_602","G_603","G_604"]), 'SEXTO',
+                       np.where(df_olimpiadas['GRUPO'].isin(["G_701","G_702","G_703","G_704"
+                                                  ]), 'SEPTIMO','OCTAVO'))
+  
+
+  df_resultados = df_olimpiadas[[#'GRADO',
+                                 'GRUPO', 'FirstName', 'LastName'
+                                 #, 'MATRICULA'
+                                 , 'PUNTAJE', '%_CORRECTO'
+                               #,'p1', 'Pts_p1', 'p2', 'Pts_p2', 'p3', 'Pts_p3', 'p4', 'Pts_p4', 'p5', 'Pts_p5', 'p6', 'Pts_p6', 'p7', 'Pts_p7', 'p8', 'Pts_p8', 'p9', 'Pts_p9', 'p10', 'Pts_p10', 'p11', 'Pts_p11', 'p12', 'Pts_p12', 'p13', 'Pts_p13', 'p14', 'Pts_p14', 'p15', 'Pts_p15', 'p16', 'Pts_p16'
+                         #, 'CORRECTASp1', 'CORRECTASp2', 'CORRECTASp3', 'CORRECTASp4', 'CORRECTASp5', 'CORRECTASp6', 'CORRECTASp7', 'CORRECTASp8', 'CORRECTASp9', 'CORRECTASp10', 'CORRECTASp11', 'CORRECTASp12', 'CORRECTASp13', 'CORRECTASp14', 'CORRECTASp15', 'CORRECTASp16'
+                         ]]
+  df_resultados['NOTA'] = df_resultados['%_CORRECTO'] /20
+  df_resultados['NOTA'] = df_resultados['NOTA'].round(2)
+  df_resultados['DESEMPEÑO'] = np.where(df_resultados['NOTA'] >= 4.6, 'SUPERIOR',
+                                       np.where(df_resultados['NOTA'] >= 4.0, 'ALTO',
+                                               np.where(df_resultados['NOTA'] >= 3.0, 'BÁSICO','BAJO')))
+  
+  ##############################################
+  # Definir la columna por la que se desea agrupar
+  columna_grupo = "GRUPO"  
+
+  # Obtener grupos únicos de la columna elegida
+  grupos_unicos = df_resultados[columna_grupo].unique()
+
+  # Crear un selector de grupo con st.selectbox
+  grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
+
+  # Seleccionamos grupo
+  datos_grupo_seleccionado = df_resultados[df_resultados.GRUPO == grupo_seleccionado]
+
+  #############################################
+  st.dataframe(datos_grupo_seleccionado)
+
+  # Crear archivo Excel en memoria
+  output = io.BytesIO()
+  with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        datos_grupo_seleccionado.to_excel(writer, sheet_name="Datos_Grupo", index=False)
+        writer.close()
+
+  output.seek(0)
+
+  # Botón de descarga
+  st.download_button(
+        label="📥 Descargar en Excel",
+        data=output,
+        file_name=f"Datos_{grupo_seleccionado}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 
