@@ -22,6 +22,7 @@ alt.themes.enable("dark")
 @st.cache_data
 def cargar_datos():
     df = pd.read_excel("Resultados_Simulacro_ICFES.xlsx")
+    df = df.dropna()
     return df#.copy()
 
 @st.cache_data
@@ -364,13 +365,13 @@ if len(clave_docente) > 0:
 
         style_metric_cards(border_color="#3A74E7")
 
-        your_score_global
+       #your_score_global
 
-        percentile
+       #percentile
 
-        q3, q2, q1 
+       #q3, q2, q1 
 
-        cuartiles
+       #cuartiles
 
     ##############################################################################################################
     ########################################## PUNTAJE MATEMÁTICAS ###########################################
@@ -415,13 +416,17 @@ if len(clave_docente) > 0:
 
         style_metric_cards(border_color="#3A74E7")
 
-        your_score_global
-
-        percentile
-
-        q3, q2, q1 
-
-        cuartiles
+        #your_score_global
+#
+        #percentile
+#
+        #q3, q2, q1 
+#
+        #cuartiles
+#
+        #datos_simulacro_seleccionado['Matemáticas']
+#
+        #datos_simulacro_seleccionado
 
     ##############################################################################################################
     ########################################## PUNTAJE Lectura crítica ###########################################
@@ -490,10 +495,10 @@ if len(clave_docente) > 0:
         df_usuario = filtrar_datos(clave_docente, datos_simulacro_seleccionado)
 
         # Tu puntuación
-        your_score_global = df_usuario[f'{area_puntaje}'].iloc[0]
+        your_score_global = df_usuario['Ciencias naturales'].iloc[0]
 
         # Calcular el percentil
-        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado[f'{area_puntaje}'], your_score_global),1)
+        percentile = round(stats.percentileofscore(datos_simulacro_seleccionado['Ciencias naturales'], your_score_global),1)
 
         figu = create_progress_bar(percentile)
 
@@ -504,7 +509,7 @@ if len(clave_docente) > 0:
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
-            st.altair_chart(make_donut_porcentaje(percentile, f"Percentil Puntaje {area_puntaje}", "green"))
+            st.altair_chart(make_donut_porcentaje(percentile, "Percentil Puntaje Ciencias naturales", "green"))
         with col3:
             st.write(f'Promedio Puntaje {area_puntaje} sobre 100')
             st.altair_chart(make_donut(promedio, 100, f"Puntaje {area_puntaje} promedio", "blue"))
@@ -513,9 +518,17 @@ if len(clave_docente) > 0:
 
         style_metric_cards(border_color="#3A74E7")
 
-        your_score_global
-
-        cuartiles
+        #your_score_global
+#
+        #percentile
+#
+        #q3, q2, q1 
+#
+        #cuartiles
+#
+        #datos_simulacro_seleccionado['Matemáticas']
+#
+        #datos_simulacro_seleccionado
 
     ##############################################################################################################
     ########################################## PUNTAJE Sociales y ciudadanas ###########################################
@@ -607,6 +620,14 @@ if len(clave_docente) > 0:
 
         style_metric_cards(border_color="#3A74E7")
 
-        your_score_global
-
-        cuartiles
+        #your_score_global
+#
+        #percentile
+#
+        #q3, q2, q1 
+#
+        #cuartiles
+#
+        #datos_simulacro_seleccionado['Matemáticas']
+#
+        #datos_simulacro_seleccionado
