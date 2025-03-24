@@ -106,11 +106,11 @@ def create_progress_bar(percentage):
 
 #Donut chart
 
-def make_donut_color(input_response, sobre, input_text, input_color):
+def make_donut_color(input_response, percentil_puntaje, sobre, input_text, input_color):
   
-  if input_response <= q1:
+  if percentil_puntaje <= 25.00:
       chart_color = ['#E74C3C', '#781F16']
-  elif input_response <= q3:
+  elif percentil_puntaje < 75.00:
       chart_color = ['#F39C12', '#875A12']
   else:
       chart_color = ['#27AE60', '#12783D']
@@ -190,9 +190,9 @@ def make_donut(input_response, sobre, input_text, input_color):
   return plot_bg + plot + text
 
 def make_donut_porcentaje(input_response, input_text, input_color):
-  if input_response <= 25:
+  if input_response <= 25.00:
       chart_color = ['#E74C3C', '#781F16']
-  elif input_response <= 75:
+  elif input_response < 75.00:
       chart_color = ['#F39C12', '#875A12']
   else:
       chart_color = ['#27AE60', '#12783D']
@@ -266,6 +266,16 @@ with st.sidebar:
               st.markdown("**ESTUDIANTE:**")
               st.markdown(f"{est_nombre}")
               st.markdown(f"**GRUPO:** {grupo}")
+
+    # AÑO
+    # Obtener años únicos del dataframe
+    años_unicos = sorted(result_df['AÑO'].unique(), reverse=True)
+
+    # Crear checkboxes para seleccionar años
+    años_seleccionados = st.multiselect("Seleccione los años a visualizar:", años_unicos, default=años_unicos)
+
+    # Filtrar los datos por los años seleccionados
+    result_df = result_df[result_df['AÑO'].isin(años_seleccionados)]
 ##############################################################################
 
 # Tablero principal
@@ -304,7 +314,7 @@ if len(clave_docente) > 0:
     grupo_seleccionado = st.selectbox("Seleccione un simulacro:", grupos_unicos)
 
     # Seleccionamos grupo
-    datos_simulacro_seleccionado = datos[datos.SIMULACRO== grupo_seleccionado]
+    datos_simulacro_seleccionado = datos[(datos.SIMULACRO== grupo_seleccionado) & (datos.AÑO.isin(años_seleccionados))]
 
     ################################################################################
     tableros = ["Puntaje Global", "Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
@@ -341,7 +351,7 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write('Puntaje Global sobre 500')
-            st.altair_chart(make_donut_color(your_score_global, 500, "Puntaje global", "green"))
+            st.altair_chart(make_donut_color(your_score_global, percentile, 500, "Puntaje global", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
@@ -353,6 +363,14 @@ if len(clave_docente) > 0:
         #st.metric(label="Puntaje global", value=your_score_global)
 
         style_metric_cards(border_color="#3A74E7")
+
+        your_score_global
+
+        percentile
+
+        q3, q2, q1 
+
+        cuartiles
 
     ##############################################################################################################
     ########################################## PUNTAJE MATEMÁTICAS ###########################################
@@ -384,7 +402,7 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write('Puntaje Matemáticas sobre 100')
-            st.altair_chart(make_donut_color(your_score_global, 100, "Matemáticas", "green"))
+            st.altair_chart(make_donut_color(your_score_global, percentile, 100, "Matemáticas", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
@@ -396,6 +414,14 @@ if len(clave_docente) > 0:
         #st.metric(label="Puntaje global", value=your_score_global)
 
         style_metric_cards(border_color="#3A74E7")
+
+        your_score_global
+
+        percentile
+
+        q3, q2, q1 
+
+        cuartiles
 
     ##############################################################################################################
     ########################################## PUNTAJE Lectura crítica ###########################################
@@ -429,7 +455,7 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write('Puntaje Lectura crítica sobre 100')
-            st.altair_chart(make_donut_color(your_score_global, 100, "Lectura crítica", "green"))
+            st.altair_chart(make_donut_color(your_score_global, percentile, 100, "Lectura crítica", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
@@ -474,7 +500,7 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write(f'Puntaje {area_puntaje} sobre 100')
-            st.altair_chart(make_donut_color(your_score_global, 100, f"{area_puntaje}", "green"))
+            st.altair_chart(make_donut_color(your_score_global, percentile, 100, f"{area_puntaje}", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
@@ -486,6 +512,10 @@ if len(clave_docente) > 0:
         #st.metric(label="Puntaje global", value=your_score_global)
 
         style_metric_cards(border_color="#3A74E7")
+
+        your_score_global
+
+        cuartiles
 
     ##############################################################################################################
     ########################################## PUNTAJE Sociales y ciudadanas ###########################################
@@ -519,7 +549,7 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write(f'Puntaje {area_puntaje} sobre 100')
-            st.altair_chart(make_donut_color(your_score_global, 100, f"{area_puntaje}", "green"))
+            st.altair_chart(make_donut_color(your_score_global, percentile, 100, f"{area_puntaje}", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
@@ -564,7 +594,7 @@ if len(clave_docente) > 0:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.write(f'Puntaje {area_puntaje} sobre 100')
-            st.altair_chart(make_donut_color(your_score_global, 100, f"{area_puntaje}", "green"))
+            st.altair_chart(make_donut_color(your_score_global, percentile, 100, f"{area_puntaje}", "green"))
         with col2:
             #st.plotly_chart(figu)
             st.write('Percentil Puntaje')
@@ -576,3 +606,7 @@ if len(clave_docente) > 0:
         #st.metric(label="Puntaje global", value=your_score_global)
 
         style_metric_cards(border_color="#3A74E7")
+
+        your_score_global
+
+        cuartiles
