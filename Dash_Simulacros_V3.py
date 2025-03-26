@@ -27,6 +27,8 @@ datos["Grupo"] = datos["Grupo"].astype(str)
 #datos["AÑO"] = datos["AÑO"].astype(str)
 datos["Matemáticas"] = datos["Matemáticas"].astype(int)
 
+datos_año = datos.copy()
+
 ################################################# FUNCIONES #################################################
 
 ## Dona
@@ -85,33 +87,39 @@ with st.sidebar:
     # Crear un selector de grupo con st.selectbox
     grado_seleccionado = st.selectbox("Seleccione el grado:", grado)
 
+    # Crear un selector de año
     st.header("AÑO")
     año = datos.AÑO.unique().tolist()#[2024, 2025]
-    # Crear un selector de grupo con st.selectbox
-    #año_seleccionado = st.selectbox("Seleccione el año:", año)
+    año_seleccionado = st.selectbox("Seleccione el año:", año)
 
-    #datos = datos[(datos['Grupo'].str.startswith(grado_seleccionado)) & (datos['AÑO'] == año_seleccionado)]
-
-    min_value = datos['AÑO'].min()
-    max_value = datos['AÑO'].max()
-
-    from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
+    # Deslizador para seleccionar rango de años
+    #min_value = datos['AÑO'].min()
+    #max_value = datos['AÑO'].max()
+    #
+    #from_year, to_year = st.slider(
+    #'Cuáles son los añños de interes?',
+    #min_value=min_value,
+    #max_value=max_value,
+    #value=[min_value, max_value])
 
     # -- Select for high sample rate data
     high_fs = st.sidebar.checkbox('Sin conectar')
     if high_fs:
         datos = datos[datos['Grupo'].isin(['1101','1102','1103','1104'])].copy()
     
-    datos = datos[(datos['Grupo'].str.startswith(grado_seleccionado)) 
-                  & (datos['AÑO'] <= to_year)
-                  & (from_year <= datos['AÑO'])
-                  ]
+    #datos = datos[(datos['Grupo'].str.startswith(grado_seleccionado)) 
+    #              & (datos['AÑO'] <= to_year)
+    #              & (from_year <= datos['AÑO'])
+    #              ]
 
-    
+    datos = datos[(datos['Grupo'].str.startswith(grado_seleccionado)) & (datos['AÑO'] == año_seleccionado)]
+
+    # Validar si hay datos
+    #if datos.empty:
+    #    st.warning("⚠️ No se tienen datos aún para este grado en el año seleccionado.")
+    #else:
+    #    st.success("✅ Datos cargados correctamente.")
+        #st.dataframe(datos) # Mostrar los datos
 
 ################################################# METRICAS EXTERNAS #################################################
 
@@ -261,55 +269,59 @@ with tab_1:
 # Mostrar gráfico de barras de distribución de puntajes por grupo
 
 # Agrupar datos por grupo y calcular promedios de puntajes globales
-  datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])['Puntaje global'].mean().round(2).reset_index()
+  datos_agrupados = datos.groupby(['Grupo','SIMULACRO','AÑO'])['Puntaje global'].mean().round(2).reset_index()
 
-# Crear gráfico de barras
+# Validar si hay datos
+  if datos_agrupados.empty:
+      st.warning("⚠️ No se tienen datos aún para este grado en el año seleccionado.")
+  else:
+     # Crear gráfico de barras
 
-  fig = px.bar(datos_agrupados, x="Grupo", y="Puntaje global", color = 'SIMULACRO', barmode='group', text_auto=True)
+      fig = px.bar(datos_agrupados, x="Grupo", y="Puntaje global", color = 'SIMULACRO', barmode='group', text_auto=True)
 
-# Actualizar el diseño para etiquetas y título
-  fig.update_layout(
-      xaxis_title="Grupo",
-      yaxis_title="Puntaje global",
-      title="Distribución de puntajes globales por grupo",
-  )
+#     Actualizar el diseño para etiquetas y título
+      fig.update_layout(
+          xaxis_title="Grupo",
+          yaxis_title="Puntaje global",
+          title="Distribución de puntajes globales por grupo",
+      )
 
-# Mostrar el gráfico
-  st.plotly_chart(fig)
+#     Mostrar el gráfico
+      st.plotly_chart(fig)
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  #Ordenar por 'Puntaje global' y seleccionar los top 10
-  if S1 == 1:
-     top_ten_s1 = datos_s1[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+      #Ordenar por 'Puntaje global' y seleccionar los top 10
+      if S1 == 1:
+         top_ten_s1 = datos_s1[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
 
-  if S2 == 1:
-     top_ten_s2 = datos_s2[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+      if S2 == 1:
+         top_ten_s2 = datos_s2[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
 
-  if S3 == 1:
-     top_ten_s3 = datos_s3[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+      if S3 == 1:
+         top_ten_s3 = datos_s3[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
 
-  if ICFES == 1:
-     top_ten_icfes = datos_icfes[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
+      if ICFES == 1:
+         top_ten_icfes = datos_icfes[["Grupo","Nombre alumno","Puntaje global"]].nlargest(10, 'Puntaje global')
 
-  st.subheader("Top Ten Puntajes Globales")
+      st.subheader("Top Ten Puntajes Globales")
 
-  col1, col2, col3= st.columns(3)
-  with col1:
-    if S1 == 1:
-       st.subheader("Primer Simulacro")
-       st.dataframe(top_ten_s1)
-    if ICFES == 1:
-       st.subheader("ICFES 2024")
-       st.dataframe(top_ten_icfes)
-  with col2:
-    if S2 == 1:
-       st.subheader("Segundo Simulacro")
-       st.dataframe(top_ten_s2)
-  with col3:
-    if S3 == 1:
-       st.subheader("Tercer Simulacro")
-       st.dataframe(top_ten_s3)
+      col1, col2, col3= st.columns(3)
+      with col1:
+        if S1 == 1:
+           st.subheader("Primer Simulacro")
+           st.dataframe(top_ten_s1)
+        if ICFES == 1:
+           st.subheader("ICFES 2024")
+           st.dataframe(top_ten_icfes)
+      with col2:
+        if S2 == 1:
+           st.subheader("Segundo Simulacro")
+           st.dataframe(top_ten_s2)
+      with col3:
+        if S3 == 1:
+           st.subheader("Tercer Simulacro")
+           st.dataframe(top_ten_s3)
 
 ##############################################################################################################
 ############################################# ANÁLISI POR AREA ###############################################
@@ -371,143 +383,147 @@ with tab_2:
   #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   datos_agrupados_simulacro = datos.groupby(['SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
 
-  # derretir datos_agrupados por columnas de areas
-  datos_derretidos_simulacro = datos_agrupados_simulacro.melt(id_vars=['SIMULACRO'], var_name="Área", value_name="Promedio")
+  # Validar si hay datos
+  if datos_agrupados_simulacro.empty:
+      st.warning("⚠️ No se tienen datos aún para este grado en el año seleccionado.")
+  else:
+      # derretir datos_agrupados por columnas de areas
+      datos_derretidos_simulacro = datos_agrupados_simulacro.melt(id_vars=['SIMULACRO'], var_name="Área", value_name="Promedio")
 
-  # Seleccionamos grupo
-  #datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
+      # Seleccionamos grupo
+      #datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
 
-  # Crear gráfico de barras por area
-  fig = px.bar(datos_derretidos_simulacro, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
+      # Crear gráfico de barras por area
+      fig = px.bar(datos_derretidos_simulacro, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
 
-  # Actualizar el diseño para etiquetas y título
-  fig.update_layout(
-      xaxis_title="Áreas",
-      yaxis_title="Promedios",
-      title="Distribución de puntajes por área",
-  )
+      # Actualizar el diseño para etiquetas y título
+      fig.update_layout(
+          xaxis_title="Áreas",
+          yaxis_title="Promedios",
+          title="Distribución de puntajes por área",
+      )
 
-  # Mostrar el gráfico
-  #fig.show()
-  st.plotly_chart(fig)
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      # Mostrar el gráfico
+      #fig.show()
+      st.plotly_chart(fig)
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  # Definir lista de áreas para las pestañas
-  areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
+      # Definir lista de áreas para las pestañas
+      areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
 
-  #tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
+      #tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
 
-  # Crear un selector de grupo con st.selectbox
-  area_seleccionado = st.selectbox("Seleccione el numero de simulacro:", areas)
+      # Crear un selector de grupo con st.selectbox
+      area_seleccionado = st.selectbox("Seleccione el numero de simulacro:", areas)
 
-  #datos = datos[datos["SIMULACRO"] == simulacro_seleccionado]
+      #datos = datos[datos["SIMULACRO"] == simulacro_seleccionado]
 
-  st.header(area_seleccionado)
-  # Obtener datos del área actual
-  if S1 == 1:
-     datos_area_s1 = obtener_datos_por_area_simulacro(area_seleccionado,"S1")
-  if S2 == 1:
-     datos_area_s2 = obtener_datos_por_area_simulacro(area_seleccionado,"S2")
-  if S3 == 1:
-     datos_area_s3 = obtener_datos_por_area_simulacro(area_seleccionado,"S3")
-  if ICFES == 1:
-     datos_area_icfes = obtener_datos_por_area_simulacro(area_seleccionado,"ICFES")
+      st.header(area_seleccionado)
+      # Obtener datos del área actual
+      if S1 == 1:
+         datos_area_s1 = obtener_datos_por_area_simulacro(area_seleccionado,"S1")
+      if S2 == 1:
+         datos_area_s2 = obtener_datos_por_area_simulacro(area_seleccionado,"S2")
+      if S3 == 1:
+         datos_area_s3 = obtener_datos_por_area_simulacro(area_seleccionado,"S3")
+      if ICFES == 1:
+         datos_area_icfes = obtener_datos_por_area_simulacro(area_seleccionado,"ICFES")
 
-  # Calcular métricas para el área actual
-  if S1 == 1:
-     metricas_area_s1 = calcular_metricas_por_area(datos_area_s1,area_seleccionado)
-  if S2 == 1:
-     metricas_area_s2 = calcular_metricas_por_area(datos_area_s2,area_seleccionado)
-  if S3 == 1:
-     metricas_area_s3 = calcular_metricas_por_area(datos_area_s3,area_seleccionado)
-  if ICFES == 1:
-     metricas_area_icfes = calcular_metricas_por_area(datos_area_icfes,area_seleccionado)
-  # Generar tabla HTML con las métricas
-  #tabla_metricas_html = generar_tabla_metricas(metricas_area)
+      # Calcular métricas para el área actual
+      if S1 == 1:
+         metricas_area_s1 = calcular_metricas_por_area(datos_area_s1,area_seleccionado)
+      if S2 == 1:
+         metricas_area_s2 = calcular_metricas_por_area(datos_area_s2,area_seleccionado)
+      if S3 == 1:
+         metricas_area_s3 = calcular_metricas_por_area(datos_area_s3,area_seleccionado)
+      if ICFES == 1:
+         metricas_area_icfes = calcular_metricas_por_area(datos_area_icfes,area_seleccionado)
+      # Generar tabla HTML con las métricas
+      #tabla_metricas_html = generar_tabla_metricas(metricas_area)
 
-  # Mostrar tarjetas con las métricas
-  col1, col2, col3 = st.columns(3)
-  with col1:
-   if S1 == 1:
-      st.metric(label="Promedio global simulacro 1", value=metricas_area_s1['Promedio'].round(2))
-   if S2 == 1:
-      st.metric(label="Promedio global simulacro 2", value=metricas_area_s2['Promedio'].round(2))
-   if S3 == 1:
-      st.metric(label="Promedio global simulacro 3", value=metricas_area_s3['Promedio'].round(2))
-   if ICFES == 1:
-      st.metric(label="Promedio global ICFES", value=metricas_area_icfes['Promedio'].round(2))
-  with col2:
-   if S1 == 1:
-      st.metric(label="Máximo simulacro 1", value=metricas_area_s1['maximo_area'])
-   if S2 == 1:
-      st.metric(label="Máximo simulacro 2", value=metricas_area_s2['maximo_area'])
-   if S3 == 1:
-      st.metric(label="Máximo simulacro 3", value=metricas_area_s3['maximo_area'])
-   if ICFES == 1:
-      st.metric(label="Máximo ICFES", value=metricas_area_icfes['maximo_area'])
-  with col3:
-   if S1 == 1:
-      st.metric(label="Mínimo simulacro 1", value= metricas_area_s1['minimo_area'])
-   if S2 == 1:
-      st.metric(label="Mínimo simulacro 2", value= metricas_area_s2['minimo_area'])
-   if S3 == 1:
-      st.metric(label="Mínimo simulacro 3", value= metricas_area_s3['minimo_area'])
-   if ICFES == 1:
-      st.metric(label="Mínimo ICFES", value= metricas_area_icfes['minimo_area'])
-  style_metric_cards(border_color="#3A74E7")
+      # Mostrar tarjetas con las métricas
+      col1, col2, col3 = st.columns(3)
+      with col1:
+       if S1 == 1:
+          st.metric(label="Promedio global simulacro 1", value=metricas_area_s1['Promedio'].round(2))
+       if S2 == 1:
+          st.metric(label="Promedio global simulacro 2", value=metricas_area_s2['Promedio'].round(2))
+       if S3 == 1:
+          st.metric(label="Promedio global simulacro 3", value=metricas_area_s3['Promedio'].round(2))
+       if ICFES == 1:
+          st.metric(label="Promedio global ICFES", value=metricas_area_icfes['Promedio'].round(2))
+      with col2:
+       if S1 == 1:
+          st.metric(label="Máximo simulacro 1", value=metricas_area_s1['maximo_area'])
+       if S2 == 1:
+          st.metric(label="Máximo simulacro 2", value=metricas_area_s2['maximo_area'])
+       if S3 == 1:
+          st.metric(label="Máximo simulacro 3", value=metricas_area_s3['maximo_area'])
+       if ICFES == 1:
+          st.metric(label="Máximo ICFES", value=metricas_area_icfes['maximo_area'])
+      with col3:
+       if S1 == 1:
+          st.metric(label="Mínimo simulacro 1", value= metricas_area_s1['minimo_area'])
+       if S2 == 1:
+          st.metric(label="Mínimo simulacro 2", value= metricas_area_s2['minimo_area'])
+       if S3 == 1:
+          st.metric(label="Mínimo simulacro 3", value= metricas_area_s3['minimo_area'])
+       if ICFES == 1:
+          st.metric(label="Mínimo ICFES", value= metricas_area_icfes['minimo_area'])
+      style_metric_cards(border_color="#3A74E7")
 
-  ########### GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
+      ########### GRAFICO DE BARRAS POR GRUPO PARA MATEMATICAS##########
 
-  # Agrupar datos por grupo y calcular promedios de puntajes Matemáticas
-  datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[area_seleccionado].mean().round(2).reset_index()
+      # Agrupar datos por grupo y calcular promedios de puntajes Matemáticas
+      datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[area_seleccionado].mean().round(2).reset_index()
 
-  # Crear gráfico de barras
+      # Crear gráfico de barras
 
-  fig = px.bar(datos_agrupados, x="Grupo", y=area_seleccionado, color = 'SIMULACRO', barmode='group', text_auto=True)
+      fig = px.bar(datos_agrupados, x="Grupo", y=area_seleccionado, color = 'SIMULACRO', barmode='group', text_auto=True)
 
-  # Actualizar el diseño para etiquetas y título
-  fig.update_layout(
-      xaxis_title="Grupo",
-      yaxis_title="Matemáticas",
-      title=f"Distribución de puntaje {area_seleccionado} por grupo",
-  )
+      # Actualizar el diseño para etiquetas y título
+      fig.update_layout(
+          xaxis_title="Grupo",
+          yaxis_title="Matemáticas",
+          title=f"Distribución de puntaje {area_seleccionado} por grupo",
+      )
 
-  # Mostrar el gráfico
-  st.plotly_chart(fig)
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  #Ordenar por área y seleccionar los top 10
-  if S1 == 1:
-     top_ten_area_s1 = datos_area_s1[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
-  if S2 == 1:
-     top_ten_area_s2 = datos_area_s2[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
-  if S3 == 1:
-     top_ten_area_s3 = datos_area_s3[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
-  if ICFES == 1:
-     top_ten_area_icfes = datos_area_icfes[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
+      # Mostrar el gráfico
+      st.plotly_chart(fig)
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      #Ordenar por área y seleccionar los top 10
+      if S1 == 1:
+         top_ten_area_s1 = datos_area_s1[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
+      if S2 == 1:
+         top_ten_area_s2 = datos_area_s2[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
+      if S3 == 1:
+         top_ten_area_s3 = datos_area_s3[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
+      if ICFES == 1:
+         top_ten_area_icfes = datos_area_icfes[["Grupo","Nombre alumno",area_seleccionado]].nlargest(10, area_seleccionado)
 
-  st.subheader(f"Top Ten {area_seleccionado}")
+      st.subheader(f"Top Ten {area_seleccionado}")
 
-  col1, col2, col3= st.columns(3)
-  with col1:
-    if S1 == 1:
-       st.subheader("Primer Simulacro")
-       st.dataframe(top_ten_area_s1)
+      col1, col2, col3= st.columns(3)
+      with col1:
+        if S1 == 1:
+           st.subheader("Primer Simulacro")
+           st.dataframe(top_ten_area_s1)
 
-    if ICFES == 1:
-       st.subheader("ICFES 2024")
-       st.dataframe(top_ten_area_icfes)
-  with col2:
-    if S2 == 1:
-       st.subheader("Segundo Simulacro")
-       st.dataframe(top_ten_area_s2)
-  with col3:
-    if S3 == 1:
-       st.subheader("Tercer Simulacro")
-       st.dataframe(top_ten_area_s3)
+        if ICFES == 1:
+           st.subheader("ICFES 2024")
+           st.dataframe(top_ten_area_icfes)
+      with col2:
+        if S2 == 1:
+           st.subheader("Segundo Simulacro")
+           st.dataframe(top_ten_area_s2)
+      with col3:
+        if S3 == 1:
+           st.subheader("Tercer Simulacro")
+           st.dataframe(top_ten_area_s3)
 
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  #st.plotly_chart(px.histogram(datos_area_s1, x=area_seleccionado, text_auto=True))
-  #st.plotly_chart(px.box(datos_area_s1, x=area_seleccionado))
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      #st.plotly_chart(px.histogram(datos_area_s1, x=area_seleccionado, text_auto=True))
+      #st.plotly_chart(px.box(datos_area_s1, x=area_seleccionado))
 
   #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -608,113 +624,117 @@ with tab_3:
 
   datos_agrupados = datos.groupby(['Grupo','SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
 
-  # derretir datos_agrupados por columnas de areas
-  datos_derretidos = datos_agrupados.melt(id_vars=['Grupo','SIMULACRO'], var_name="Área", value_name="Promedio")
+  # Validar si hay datos
+  if datos_agrupados.empty:
+      st.warning("⚠️ No se tienen datos aún para este grado en el año seleccionado.")
+  else:   
+      # derretir datos_agrupados por columnas de areas
+      datos_derretidos = datos_agrupados.melt(id_vars=['Grupo','SIMULACRO'], var_name="Área", value_name="Promedio")
 
-  # Seleccionamos grupo
-  datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
+      # Seleccionamos grupo
+      datos_grupo_seleccionado = datos_derretidos[datos_derretidos.Grupo== grupo_seleccionado]
 
-  # Crear gráfico de barras por area
-  fig = px.bar(datos_grupo_seleccionado, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
+      # Crear gráfico de barras por area
+      fig = px.bar(datos_grupo_seleccionado, x="Área", y="Promedio", color = 'SIMULACRO', barmode='group', text_auto=True)
 
-  # Actualizar el diseño para etiquetas y título
-  fig.update_layout(
-      xaxis_title="Áreas",
-      yaxis_title="Promedios",
-      title="Distribución de puntajes por área para cdad grupo grupo",
-  )
+      # Actualizar el diseño para etiquetas y título
+      fig.update_layout(
+          xaxis_title="Áreas",
+          yaxis_title="Promedios",
+          title="Distribución de puntajes por área para cdad grupo grupo",
+      )
 
-  # Mostrar el gráfico
-  #fig.show()
-  st.plotly_chart(fig)
+      # Mostrar el gráfico
+      #fig.show()
+      st.plotly_chart(fig)
 
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  # Obtener datos del grupo seleccionado
-  datos_grupo = obtener_datos_por_grupo(grupo_seleccionado)
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      # Obtener datos del grupo seleccionado
+      datos_grupo = obtener_datos_por_grupo(grupo_seleccionado)
 
-  # Obtener datos del área actual
-  if S1 == 1:
-     datos_garea_s1 = datos_grupo[datos_grupo["SIMULACRO"] == "S1"]
-  if S2 == 1:
-     datos_garea_s2 = datos_grupo[datos_grupo["SIMULACRO"] == "S2"]
-  if S3 == 1:
-     datos_garea_s3 = datos_grupo[datos_grupo["SIMULACRO"] == "S3"]
-  if ICFES == 1:
-     datos_garea_icfes = datos_grupo[datos_grupo["SIMULACRO"] == "ICFES"]
+      # Obtener datos del área actual
+      if S1 == 1:
+         datos_garea_s1 = datos_grupo[datos_grupo["SIMULACRO"] == "S1"]
+      if S2 == 1:
+         datos_garea_s2 = datos_grupo[datos_grupo["SIMULACRO"] == "S2"]
+      if S3 == 1:
+         datos_garea_s3 = datos_grupo[datos_grupo["SIMULACRO"] == "S3"]
+      if ICFES == 1:
+         datos_garea_icfes = datos_grupo[datos_grupo["SIMULACRO"] == "ICFES"]
 
-  # Definir lista de áreas para las pestañas
-  areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
+      # Definir lista de áreas para las pestañas
+      areas = ["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]
 
-  # Crear un selector de grupo con st.selectbox
-  garea_seleccionado = st.selectbox("Seleccione el área:", areas)
+      # Crear un selector de grupo con st.selectbox
+      garea_seleccionado = st.selectbox("Seleccione el área:", areas)
 
-  # Calcular métricas para el grupo seleccionado
-  metricas_grupo_area = calcular_metricas_por_grupo_area(datos_grupo,garea_seleccionado)
+      # Calcular métricas para el grupo seleccionado
+      metricas_grupo_area = calcular_metricas_por_grupo_area(datos_grupo,garea_seleccionado)
 
-  
 
-  #Ordenar por área y seleccionar los top 10
-  if S1 == 1:
-     top_ten_garea_s1 = datos_garea_s1[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
-  if S2 == 1:
-     top_ten_garea_s2 = datos_garea_s2[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
-  if S3 == 1:
-     top_ten_garea_s3 = datos_garea_s3[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
-  if ICFES == 1:
-     top_ten_garea_icfes = datos_garea_icfes[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
 
-  st.subheader(f"Top Ten {garea_seleccionado}")
+      #Ordenar por área y seleccionar los top 10
+      if S1 == 1:
+         top_ten_garea_s1 = datos_garea_s1[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+      if S2 == 1:
+         top_ten_garea_s2 = datos_garea_s2[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+      if S3 == 1:
+         top_ten_garea_s3 = datos_garea_s3[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
+      if ICFES == 1:
+         top_ten_garea_icfes = datos_garea_icfes[["Grupo","Nombre alumno",garea_seleccionado]].nlargest(10, garea_seleccionado)
 
-  col1, col2, col3= st.columns(3)
-  with col1:
-    if S1 == 1:
-       st.subheader("Primer Simulacro")
-       st.dataframe(top_ten_garea_s1)
+      st.subheader(f"Top Ten {garea_seleccionado}")
 
-    if S2 == 1:
-       st.subheader("Segundo Simulacro")
-       st.dataframe(top_ten_garea_s2)
+      col1, col2, col3= st.columns(3)
+      with col1:
+        if S1 == 1:
+           st.subheader("Primer Simulacro")
+           st.dataframe(top_ten_garea_s1)
 
-    #if ICFES == 1:
-    #   st.subheader("ICFES")
-    #   st.dataframe(top_ten_garea_icfes)
-  with col2:
-    #if S3 == 1:
-    #   st.subheader("Tercer Simulacro")
-    #   st.dataframe(top_ten_garea_s3)
-  #with col3:
-    if S3 == 1:
-       st.subheader("Tercer Simulacro")
-       st.dataframe(top_ten_garea_s3)
+        if S2 == 1:
+           st.subheader("Segundo Simulacro")
+           st.dataframe(top_ten_garea_s2)
 
-    if ICFES == 1:
-      st.subheader("ICFES")
-      st.dataframe(top_ten_garea_icfes)
+        #if ICFES == 1:
+        #   st.subheader("ICFES")
+        #   st.dataframe(top_ten_garea_icfes)
+      with col2:
+        #if S3 == 1:
+        #   st.subheader("Tercer Simulacro")
+        #   st.dataframe(top_ten_garea_s3)
+      #with col3:
+        if S3 == 1:
+           st.subheader("Tercer Simulacro")
+           st.dataframe(top_ten_garea_s3)
 
-  #tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
-  
+        if ICFES == 1:
+          st.subheader("ICFES")
+          st.dataframe(top_ten_garea_icfes)
 
-  #with tab1:
-  #   st.header("Matemáticas")
-  #   # Mostrar tarjetas con las métricas
-  #   col1, col2, col3 = st.columns(3)
-  #   with col1:
-  #     promedio = metricas_grupo_area['Promedio'].round(2)
-  #     st.metric(label="Promedio", value=promedio)
-  #   with col2:
-  #     maximo = metricas_grupo_area['maximo_area']
-  #     st.metric(label="Máximo", value=maximo)
-  #   with col3:
-  #     minimo = metricas_grupo_area['minimo_area']
-  #     st.metric(label="Mínimo", value=minimo)
-  #   style_metric_cards(border_color="#3A74E7")
+      #tab1, tab2, tab3, tab4, tab5 = st.tabs(areas)
 
-  
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  # Mostrar histogramas y boxplots (opcional)
-  #st.plotly_chart(px.histogram(datos_grupo, x="Matemáticas"))
-  #st.plotly_chart(px.box(datos_grupo, x="Matemáticas"))
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      #with tab1:
+      #   st.header("Matemáticas")
+      #   # Mostrar tarjetas con las métricas
+      #   col1, col2, col3 = st.columns(3)
+      #   with col1:
+      #     promedio = metricas_grupo_area['Promedio'].round(2)
+      #     st.metric(label="Promedio", value=promedio)
+      #   with col2:
+      #     maximo = metricas_grupo_area['maximo_area']
+      #     st.metric(label="Máximo", value=maximo)
+      #   with col3:
+      #     minimo = metricas_grupo_area['minimo_area']
+      #     st.metric(label="Mínimo", value=minimo)
+      #   style_metric_cards(border_color="#3A74E7")
+
+
+#%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      # Mostrar histogramas y boxplots (opcional)
+      #st.plotly_chart(px.histogram(datos_grupo, x="Matemáticas"))
+      #st.plotly_chart(px.box(datos_grupo, x="Matemáticas"))
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ##############################################################################################################
 ############################################## ANÁLISIS POR AÑO ##############################################
@@ -731,13 +751,14 @@ with tab_4:
   #st.title("Resumen general - Simulacro ICFES")
 
   # Hacemos una copia para convertir la columna AÑO a string y esta sea tratada como una variable ordinal
-  df = datos.copy()
+  datos_año = datos_año[(datos_año['Grupo'].str.startswith(grado_seleccionado))]
+  df = datos_año.copy()
   df['AÑO'] = df['AÑO'].astype(str)
 
-  datos_año = df.groupby(['AÑO','SIMULACRO'])[['Puntaje global',"Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
+  datos_año1 = df.groupby(['AÑO','SIMULACRO'])[['Puntaje global',"Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
 
   # Crear gráfico de barras comparativo por año por prueba
-  fig = px.bar(datos_año, x="SIMULACRO", y='Puntaje global', color = 'AÑO', barmode='group', text_auto=True)
+  fig = px.bar(datos_año1, x="SIMULACRO", y='Puntaje global', color = 'AÑO', barmode='group', text_auto=True)
 
    # Actualizar el diseño para etiquetas y título
   fig.update_layout(
@@ -749,21 +770,40 @@ with tab_4:
   # Mostrar el gráfico
   #fig.show()
   st.plotly_chart(fig)
+  ##################################################################################
+  # Mostrar gráfico de barras de distribución de puntajes por grupo
+
+  # Agrupar datos por grupo y calcular promedios de puntajes globales
+  datos_agrupados = df.groupby(['Grupo','SIMULACRO','AÑO'])['Puntaje global'].mean().round(2).reset_index()
+
+  # Crear gráfico de barras
+
+  fig = px.bar(datos_agrupados, x="Grupo", y="Puntaje global", color = 'AÑO', barmode='group', text_auto=True)
+
+  # Actualizar el diseño para etiquetas y título
+  fig.update_layout(
+      xaxis_title="Grupo",
+      yaxis_title="Puntaje global",
+      title="Distribución de puntajes globales por grupo",
+  )
+
+  # Mostrar el gráfico
+  st.plotly_chart(fig)
 
 
-  ###################
-  datos_agrupados_simulacro = datos_año.groupby(['AÑO','SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
+  ##################################################################################
+  datos_agrupados_simulacro = datos_año1.groupby(['AÑO','SIMULACRO'])[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2).reset_index()
 
   datos1 = datos_agrupados_simulacro.melt(id_vars=['AÑO','SIMULACRO'], var_name="Área", value_name="Promedio")
 
   # Obtener grupos únicos de la columna elegida
-  simulacro_unicos = datos1.SIMULACRO.unique()
+  #simulacro_unicos = datos1.SIMULACRO.unique()
 
   # Crear un selector de grupo con st.selectbox
-  simulacro_seleccionado = st.selectbox("Seleccione un prueba:", simulacro_unicos)
+  #simulacro_seleccionado = st.selectbox("Seleccione un prueba:", simulacro_unicos)
    # derretir datos_agrupados por columnas de areas
 
-  datos1 = datos1[datos1['SIMULACRO']==simulacro_seleccionado]
+  #datos1 = datos1[datos1['SIMULACRO']==simulacro_seleccionado]
 
   fig = px.bar(datos1
              , x="Área"
@@ -777,12 +817,13 @@ with tab_4:
   fig.update_layout(
     xaxis_title="Pruebas",
     yaxis_title="Promedios",
-    title=f"Distribución de puntajes en el {simulacro_seleccionado} por año agrupados por area",
+    title=f"Distribución de puntajes en el  por año agrupados por area",
   )
 
   st.plotly_chart(fig)
 
   ########################################################################################################################
+  st.subheader("Interinstitutional")
   # Mostrar gráfico de barras de distribución de puntajes por area y año
 
   datos_historicos = pd.read_excel("Resultados_historico_2016_2024.xlsx")
