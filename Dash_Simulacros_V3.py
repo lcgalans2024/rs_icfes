@@ -19,11 +19,16 @@ st.set_page_config(layout = "wide")
 datos = pd.read_excel("Resultados_Simulacro_ICFES.xlsx")
 #datos = pd.read_excel("Resultados_Simulacro_ICFES_Sinteticos.xlsx")
 
+#datos.Grupo.replace(1001, "101G", inplace=True)
+#datos.Grupo.replace(1002, "102G", inplace=True)
+#datos.Grupo.replace(1003, "103G", inplace=True)
+#datos.Grupo.replace(1004, "104G", inplace=True)
+datos["Grupo"] = datos["Grupo"].astype(str)
 for col in datos.select_dtypes(include=np.float64):
     datos[col] = datos[col].round(2)
 datos.head()
 
-datos["Grupo"] = datos["Grupo"].astype(str)
+
 #datos["AÑO"] = datos["AÑO"].astype(str)
 datos["Matemáticas"] = datos["Matemáticas"].astype(int)
 
@@ -129,9 +134,10 @@ media_munpio = 245.0
 media_colegio = 266.0
 ####################################################################################################################
 st.title("ANÁLISIS RESULTADOS INSTITUCIONALES")
+st.subheader("⚠️ Este es un espacio en construcción ⚠️")
 
 tableros = ["Análisis Puntaje Global", "Análisis Por Area", "Análisis Por Grupo", "Análisis Por Año"
-            ,"Olimpiadas Institucionales","Olimpiadas Por Grado"
+            ,"Olimpiadas Institucionales","Descarga de resultados"
             ]
 
 tab_1, tab_2, tab_3, tab_4, tab_5, tab_6 = st.tabs(tableros)
@@ -270,7 +276,7 @@ with tab_1:
 
 # Agrupar datos por grupo y calcular promedios de puntajes globales
   datos_agrupados = datos.groupby(['Grupo','SIMULACRO','AÑO'])['Puntaje global'].mean().round(2).reset_index()
-
+  datos_agrupados["Grupo"] = datos_agrupados["Grupo"].astype(str)
 # Validar si hay datos
   if datos_agrupados.empty:
       st.warning("⚠️ No se tienen datos aún para este grado en el año seleccionado.")
@@ -322,6 +328,8 @@ with tab_1:
         if S3 == 1:
            st.subheader("Tercer Simulacro")
            st.dataframe(top_ten_s3)
+
+  datos_agrupados
 
 ##############################################################################################################
 ############################################# ANÁLISI POR AREA ###############################################
@@ -921,19 +929,35 @@ with tab_5:
   # Crear un diccionario de mapeo para renombrar las columnas
   column_mapping1 = {f'Stu{i}': f'p{i}' for i in range(1, 17)}
   column_mapping2 = {f'Mark{i}': f'CORRECTASp{i}' for i in range(1, 17)}
+  column_mapping3 = {f'Points{i}': f'Pts_p{i}' for i in range(1, 17)}
 
   # Renombrar las columnas en el DataFrame
   df_olimpiadas.rename(columns=column_mapping1, inplace=True)
   df_olimpiadas.rename(columns=column_mapping2, inplace=True)
-  df_olimpiadas.rename(columns={"QuizName": "GRADO", "QuizClass": "GRUPO", "CustomID":"MATRICULA"}, inplace=True)
+  df_olimpiadas.rename(columns=column_mapping3, inplace=True)
+  df_olimpiadas.rename(columns={"QuizName": "GRADO", "QuizClass": "GRUPO", "CustomID":"MATRICULA", "Earned Points":"PUNTAJE", "PercentCorrect":"%_CORRECTO"}, inplace=True)
 
   # Creamos la columna de grado
   df_olimpiadas['GRADO'] = np.where(df_olimpiadas['GRUPO'].isin(["G_601","G_602","G_603","G_604"]), 'SEXTO',
                        np.where(df_olimpiadas['GRUPO'].isin(["G_701","G_702","G_703","G_704"]), 'SEPTIMO','OCTAVO'))
 
+  df_resultados = df_olimpiadas[[#'GRADO',
+                                 'GRUPO', 'FirstName', 'LastName'
+                                 #, 'MATRICULA'
+                                 , 'PUNTAJE', '%_CORRECTO'
+                               #,'p1', 'Pts_p1', 'p2', 'Pts_p2', 'p3', 'Pts_p3', 'p4', 'Pts_p4', 'p5', 'Pts_p5', 'p6', 'Pts_p6', 'p7', 'Pts_p7', 'p8', 'Pts_p8', 'p9', 'Pts_p9', 'p10', 'Pts_p10', 'p11', 'Pts_p11', 'p12', 'Pts_p12', 'p13', 'Pts_p13', 'p14', 'Pts_p14', 'p15', 'Pts_p15', 'p16', 'Pts_p16'
+                         #, 'CORRECTASp1', 'CORRECTASp2', 'CORRECTASp3', 'CORRECTASp4', 'CORRECTASp5', 'CORRECTASp6', 'CORRECTASp7', 'CORRECTASp8', 'CORRECTASp9', 'CORRECTASp10', 'CORRECTASp11', 'CORRECTASp12', 'CORRECTASp13', 'CORRECTASp14', 'CORRECTASp15', 'CORRECTASp16'
+                         ]]
+  df_resultados['NOTA'] = df_resultados['%_CORRECTO'] /20
+  df_resultados['NOTA'] = df_resultados['NOTA'].round(2)
+  df_resultados['DESEMPEÑO'] = np.where(df_resultados['NOTA'] >= 4.6, 'SUPERIOR',
+                                       np.where(df_resultados['NOTA'] >= 4.0, 'ALTO',
+                                               np.where(df_resultados['NOTA'] >= 3.0, 'BÁSICO','BAJO')))
+  
+
   # Derretir el DataFrame por las columnas P1, P2, P3, P4 y P5
   id_vars = ['GRADO', 'GRUPO', 'FirstName', 'LastName', 'StudentID',
-           'MATRICULA', 'Earned Points', 'Possible Points', 'PercentCorrect']
+           'MATRICULA', 'PUNTAJE', 'Possible Points', '%_CORRECTO']
   value_vars = column_mapping1.values()
 
   df_melted = pd.melt(df_olimpiadas, id_vars=id_vars, value_vars=value_vars, var_name='PREGUNTA', value_name='OPCION_MARCADA')
@@ -964,7 +988,7 @@ with tab_5:
     count=('PREGUNTA', 'size'),
     aciertos=('ACIERTOS', 'sum'),
     proporcion_aciertos=('ACIERTOS', 'mean')
-    ,percent_correct=('PercentCorrect', 'mean')
+    ,percent_correct=('%_CORRECTO', 'mean')
 
   ).reset_index()
 
@@ -987,7 +1011,7 @@ with tab_5:
   ############################## Crear el gráfico de barras por grupo ##############################
 
   # Calcular el promedio de aciertos por grupo
-  df_grupo = df_12p.groupby(['GRUPO']).agg(promedio=('PercentCorrect', 'mean')).reset_index()
+  df_grupo = df_12p.groupby(['GRUPO']).agg(promedio=('%_CORRECTO', 'mean')).reset_index()
 
   df_grupo['promedio'] = df_grupo['promedio'].round(2)
 
@@ -1070,78 +1094,88 @@ def ANÁLISIS_POR_GRADO():
 
 with tab_6:
 
-  st.header("Análisis por Grupo")
+  st.header("Descargar de resultados por grupo")
 
-  # Cargar los datos de las olimpiadas
-  df_claves = pd.read_excel('Olimpiadas_Institucionales.xlsx', sheet_name='Claves')
-  df_olimpiadas = pd.read_excel("Olimpiadas_Institucionales.xlsx", sheet_name='Full')
+  # Crear selector de checkbox para elegir el si es un simulacro, ICFES o Olipiadas
+  Prueba = st.radio("Seleccione la prueba de la cual desea obtener los resultados:", ["Simulacros o ICFES", "Olimpiadas"])
 
-  df_olimpiadas['QuizClass'].replace({'IEOS_601':'G_601', 'IEOS_602':'G_602', 'IEOS_603':'G_603', 'IEOS_604':'G_604'
-                                      ,'IEOS_7':'G_701', 'IEOS_702':'G_702', 'IEOS_703':'G_703', 'IEOS_704':'G_704'
-                                      ,'IEOS_801':'G_801','IEOS_802':'G_802','IEOS_803':'G_803','IEOS_804':'G_804'}, inplace=True)
+  col1, col2, col3 = st.columns(3)
 
+  if Prueba == "Simulacros o ICFES":
 
-  # Crear un diccionario de mapeo para renombrar las columnas
-  column_mapping1 = {f'Stu{i}': f'p{i}' for i in range(1, 17)}
-  column_mapping2 = {f'Mark{i}': f'CORRECTASp{i}' for i in range(1, 17)}
-  column_mapping3 = {f'Points{i}': f'Pts_p{i}' for i in range(1, 17)}
+    with col1:
+       # Definir la columna por la que se desea agrupar
+       columna_grupo = "SIMULACRO"
 
-  # Renombrar las columnas en el DataFrame
-  df_olimpiadas.rename(columns=column_mapping1, inplace=True)
-  df_olimpiadas.rename(columns=column_mapping2, inplace=True)
-  df_olimpiadas.rename(columns=column_mapping3, inplace=True)
-  df_olimpiadas.rename(columns={"QuizName": "GRADO", "QuizClass": "GRUPO", "CustomID":"MATRICULA", "Earned Points":"PUNTAJE", "PercentCorrect":"%_CORRECTO"}, inplace=True)
+       # Obtener grupos únicos de la columna elegida
+       grupos_unicos = datos[columna_grupo].unique()
 
-  # Creamos la columna de grado
-  df_olimpiadas['GRADO'] = np.where(df_olimpiadas['GRUPO'].isin(["G_601","G_602","G_603","G_604"]), 'SEXTO',
-                       np.where(df_olimpiadas['GRUPO'].isin(["G_701","G_702","G_703","G_704"
-                                                  ]), 'SEPTIMO','OCTAVO'))
-  
+        # Crear un selector de grupo con st.selectbox
+       grupo_seleccionado = st.selectbox("Seleccione un simulacro o ICFES:", grupos_unicos)
+       
+    with col2:
+        G_unicos = datos["Grupo"].unique()
+        # Crear un selector de grupo con st.selectbox
+        Eleccion = st.selectbox("Seleccione el grupo:", G_unicos)
+    # Seleccionamos grupo
+    datos_grupo_seleccionado = datos[(datos.SIMULACRO == grupo_seleccionado) &
+                                     (datos.Grupo == Eleccion) &
+                                     (datos['AÑO'] == año_seleccionado)
+                                     ] 
+    df_resultados_grupo = datos_grupo_seleccionado[["DOCUMENTO", "Nombre alumno", "Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].copy()
+    #############################################
+    st.dataframe(df_resultados_grupo)
 
-  df_resultados = df_olimpiadas[[#'GRADO',
-                                 'GRUPO', 'FirstName', 'LastName'
-                                 #, 'MATRICULA'
-                                 , 'PUNTAJE', '%_CORRECTO'
-                               #,'p1', 'Pts_p1', 'p2', 'Pts_p2', 'p3', 'Pts_p3', 'p4', 'Pts_p4', 'p5', 'Pts_p5', 'p6', 'Pts_p6', 'p7', 'Pts_p7', 'p8', 'Pts_p8', 'p9', 'Pts_p9', 'p10', 'Pts_p10', 'p11', 'Pts_p11', 'p12', 'Pts_p12', 'p13', 'Pts_p13', 'p14', 'Pts_p14', 'p15', 'Pts_p15', 'p16', 'Pts_p16'
-                         #, 'CORRECTASp1', 'CORRECTASp2', 'CORRECTASp3', 'CORRECTASp4', 'CORRECTASp5', 'CORRECTASp6', 'CORRECTASp7', 'CORRECTASp8', 'CORRECTASp9', 'CORRECTASp10', 'CORRECTASp11', 'CORRECTASp12', 'CORRECTASp13', 'CORRECTASp14', 'CORRECTASp15', 'CORRECTASp16'
-                         ]]
-  df_resultados['NOTA'] = df_resultados['%_CORRECTO'] /20
-  df_resultados['NOTA'] = df_resultados['NOTA'].round(2)
-  df_resultados['DESEMPEÑO'] = np.where(df_resultados['NOTA'] >= 4.6, 'SUPERIOR',
-                                       np.where(df_resultados['NOTA'] >= 4.0, 'ALTO',
-                                               np.where(df_resultados['NOTA'] >= 3.0, 'BÁSICO','BAJO')))
-  
-  ##############################################
-  # Definir la columna por la que se desea agrupar
-  columna_grupo = "GRUPO"  
+    # Crear archivo Excel en memoria
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+      df_resultados_grupo.to_excel(writer, sheet_name=f"Resultados_{Eleccion}", index=False)
+      writer.close()
 
-  # Obtener grupos únicos de la columna elegida
-  grupos_unicos = df_resultados[columna_grupo].unique()
+    output.seek(0)
 
-  # Crear un selector de grupo con st.selectbox
-  grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
+    # Botón de descarga
 
-  # Seleccionamos grupo
-  datos_grupo_seleccionado = df_resultados[df_resultados.GRUPO == grupo_seleccionado]
-
-  #############################################
-  st.dataframe(datos_grupo_seleccionado)
-
-  # Crear archivo Excel en memoria
-  output = io.BytesIO()
-  with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        datos_grupo_seleccionado.to_excel(writer, sheet_name="Datos_Grupo", index=False)
-        writer.close()
-
-  output.seek(0)
-
-  # Botón de descarga
-  st.download_button(
-        label="📥 Descargar en Excel",
-        data=output,
-        file_name=f"Datos_{grupo_seleccionado}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    st.download_button(
+      label="📥 Descargar resultados en Excel",
+      data=output,
+      file_name=f"Resultados_Grupo_{Eleccion}.xlsx",
+      mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+    
+  else:
+     
+  
+      # Definir la columna por la que se desea agrupar
+      columna_grupo = "GRUPO"  
+
+      # Obtener grupos únicos de la columna elegida
+      grupos_unicos = df_resultados[columna_grupo].unique()
+
+      # Crear un selector de grupo con st.selectbox
+      grupo_seleccionado = st.selectbox("Seleccione un grupo:", grupos_unicos)
+
+      # Seleccionamos grupo
+      datos_grupo_seleccionado = df_resultados[df_resultados.GRUPO == grupo_seleccionado]
+
+      #############################################
+      st.dataframe(datos_grupo_seleccionado)
+
+      # Crear archivo Excel en memoria
+      output = io.BytesIO()
+      with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            datos_grupo_seleccionado.to_excel(writer, sheet_name="Datos_Grupo", index=False)
+            writer.close()
+
+      output.seek(0)
+
+      # Botón de descarga
+      st.download_button(
+            label="📥 Descargar en Excel",
+            data=output,
+            file_name=f"Datos_{grupo_seleccionado}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
 
 
