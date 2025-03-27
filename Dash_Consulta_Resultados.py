@@ -109,10 +109,12 @@ def create_progress_bar(percentage):
 
 def make_donut_color(input_response, percentil_puntaje, sobre, input_text, input_color):
   
-  if percentil_puntaje <= 25.00:
+  if percentil_puntaje <= 30.00:
       chart_color = ['#E74C3C', '#781F16']
-  elif percentil_puntaje < 75.00:
+  elif percentil_puntaje < 60.00:
       chart_color = ['#F39C12', '#875A12']
+  elif percentil_puntaje < 80.00:
+      chart_color = ['#F1C40F', '#B7950B']
   else:
       chart_color = ['#27AE60', '#12783D']
   source = pd.DataFrame({
@@ -153,6 +155,8 @@ def make_donut(input_response, sobre, input_text, input_color):
       chart_color = ['#29b5e8', '#155F7A']
   if input_color == 'green':
       chart_color = ['#27AE60', '#12783D']
+  if input_color == 'yellow':
+      chart_color = ['#F1C40F', '#B7950B']
   if input_color == 'orange':
       chart_color = ['#F39C12', '#875A12']
   if input_color == 'red':
@@ -191,10 +195,12 @@ def make_donut(input_response, sobre, input_text, input_color):
   return plot_bg + plot + text
 
 def make_donut_porcentaje(input_response, input_text, input_color):
-  if input_response <= 25.00:
+  if input_response <= 30.00:
       chart_color = ['#E74C3C', '#781F16']
-  elif input_response < 75.00:
+  elif input_response < 60.00:
       chart_color = ['#F39C12', '#875A12']
+  elif input_response < 80.00:
+      chart_color = ['#F1C40F', '#B7950B']
   else:
       chart_color = ['#27AE60', '#12783D']
     
@@ -289,17 +295,17 @@ datos_agrupados = datos.groupby(['DOCUMENTO','SIMULACRO'])['Puntaje global'].mea
 
 # Crear gráfico de barras
 
-fig = px.bar(datos_agrupados[datos_agrupados["DOCUMENTO"] == clave_docente], y="SIMULACRO", x="Puntaje global", color = 'SIMULACRO', barmode='group', text_auto=True)
-
-# Actualizar el diseño para etiquetas y título
-fig.update_layout(
-      xaxis_title="Puntaje global",
-      yaxis_title="Simulacro",
-      title="Distribución de puntajes globales por simulacro",
-  )
-
-# Mostrar el gráfico
-st.plotly_chart(fig)
+#fig = px.bar(datos_agrupados[datos_agrupados["DOCUMENTO"] == clave_docente], y="SIMULACRO", x="Puntaje global", color = 'SIMULACRO', barmode='group', text_auto=True)
+#
+## Actualizar el diseño para etiquetas y título
+#fig.update_layout(
+#      xaxis_title="Puntaje global",
+#      yaxis_title="Simulacro",
+#      title="Distribución de puntajes globales por simulacro",
+#  )
+#
+## Mostrar el gráfico
+#st.plotly_chart(fig)
 
 if len(clave_docente) > 0:   
     
