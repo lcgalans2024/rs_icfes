@@ -794,7 +794,7 @@ with tab_4:
   )
 
   # Mostrar el gráfico
-  st.plotly_chart(fig)
+  #st.plotly_chart(fig)
 
 
   ##################################################################################
@@ -826,7 +826,7 @@ with tab_4:
     title=f"Distribución de puntajes en el  por año agrupados por area",
   )
 
-  st.plotly_chart(fig)
+  #st.plotly_chart(fig)
 
   ########################################################################################################################
   st.subheader("Interinstitutional")
