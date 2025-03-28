@@ -17,6 +17,7 @@ st.set_page_config(layout = "wide")
 ##############################################################################################################
 #Cargamos los datos
 datos = pd.read_excel("Resultados_Simulacro_ICFES.xlsx")
+datos = datos.dropna()
 #datos = pd.read_excel("Resultados_Simulacro_ICFES_Sinteticos.xlsx")
 
 #datos.Grupo.replace(1001, "101G", inplace=True)
@@ -30,7 +31,7 @@ datos.head()
 
 
 #datos["AÑO"] = datos["AÑO"].astype(str)
-datos["Matemáticas"] = datos["Matemáticas"].astype(int)
+#datos["Matemáticas"] = datos["Matemáticas"].astype(int)
 
 datos_año = datos.copy()
 
@@ -328,9 +329,6 @@ with tab_1:
         if S3 == 1:
            st.subheader("Tercer Simulacro")
            st.dataframe(top_ten_s3)
-
-  datos_agrupados
-
 ##############################################################################################################
 ############################################# ANÁLISI POR AREA ###############################################
 ##############################################################################################################
