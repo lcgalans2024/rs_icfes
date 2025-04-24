@@ -755,7 +755,8 @@ with tab_4:
 
   #st.header("...")
   #st.title("Resumen general - Simulacro ICFES")
-
+  once_decimo = datos_año.copy()
+  once_decimo['AÑO'] = once_decimo['AÑO'].astype(str)
   # Hacemos una copia para convertir la columna AÑO a string y esta sea tratada como una variable ordinal
   datos_año = datos_año[(datos_año['Grupo'].str.startswith(grado_seleccionado))]
   df = datos_año.copy()
@@ -776,6 +777,30 @@ with tab_4:
   # Mostrar el gráfico
   #fig.show()
   st.plotly_chart(fig)
+  #################################################################################
+  # Filtrar los estudiantes de grado once en 2025
+  once_decimo = once_decimo[((once_decimo['AÑO'] == '2025') & (once_decimo['Grupo'].str.startswith('110'))) | ((once_decimo['AÑO'] == '2024') & (once_decimo['Grupo'].str.startswith('100')))]
+  
+  promedios_por_areas = once_decimo.groupby('AÑO')[["Matemáticas", "Lectura crítica", "Ciencias naturales", "Sociales y ciudadanas", "Inglés"]].mean().round(2)
+
+  # Derretir el DataFrame para que sea más fácil de graficar
+  promedios_derretidos = promedios_por_areas.reset_index().melt(id_vars="AÑO", var_name="Área", value_name="Promedio")
+
+  # Crear el gráfico de barras agrupado por área
+  fig = px.bar(promedios_derretidos, x="Área", y="Promedio", color="AÑO", barmode="group", text_auto=True)
+
+  # Actualizar el diseño para etiquetas y título
+  fig.update_layout(
+      xaxis_title="Áreas",
+      yaxis_title="Promedios",
+      title="Comparativo décimo 2024 vs once 2025 por área",
+  )
+
+  # Mostrar el gráfico
+  st.plotly_chart(fig)
+
+  # Display the resulting DataFrame
+  #promedios_por_areas
   ##################################################################################
   # Mostrar gráfico de barras de distribución de puntajes por grupo
 
