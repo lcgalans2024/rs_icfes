@@ -940,9 +940,10 @@ with tab_5:
   df_claves = pd.read_excel('Olimpiadas_Institucionales.xlsx', sheet_name='Claves')
   df_olimpiadas = pd.read_excel("Olimpiadas_Institucionales.xlsx", sheet_name='Full')
 
-  df_olimpiadas['QuizClass'].replace({'IEOS_601':'G_601', 'IEOS_602':'G_602', 'IEOS_603':'G_603', 'IEOS_604':'G_604'
-                                      ,'IEOS_7':'G_701', 'IEOS_702':'G_702', 'IEOS_703':'G_703', 'IEOS_704':'G_704'
-                                      ,'IEOS_801':'G_801','IEOS_802':'G_802','IEOS_803':'G_803','IEOS_804':'G_804'}, inplace=True)
+  #df_olimpiadas['QuizClass'].replace({'IEOS_601':'G_601', 'IEOS_602':'G_602', 'IEOS_603':'G_603', 'IEOS_604':'G_604'
+  #                                    ,'IEOS_7':'G_701', 'IEOS_702':'G_702', 'IEOS_703':'G_703', 'IEOS_704':'G_704'
+  #                                    ,'IEOS_801':'G_801','IEOS_802':'G_802','IEOS_803':'G_803','IEOS_804':'G_804'}, inplace=True)
+  df_olimpiadas['QuizClass'] = df_olimpiadas['QuizClass'].str.replace('IEOS', 'G', regex=False)
 
   #st.dataframe(df_claves.head())
 
